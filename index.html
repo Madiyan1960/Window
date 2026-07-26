@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Электронная очередь СИЗО — Общая база</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 850px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .card {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    h2 {
+      margin-top: 0;
+      color: #1a252f;
+      text-align: center;
+      font-size: 20px;
+    }
+    h3 {
+      margin-top: 0;
+      color: #1a252f;
+      text-align: center;
+      font-size: 17px;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 13px;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      flex: 1;
+      padding: 16px 10px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      transition: background 0.2s, transform 0.1s;
+      touch-action: manipulation;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-w2 { background-color: #27ae60; }
+    .btn-w2:hover { background-color: #219150; }
+    .btn-w3 { background-color: #2980b9; }
+    .btn-w3:hover { background-color: #216997; }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+    th { background-color: #f8f9fa; color: #4a5568; }
+    
+    .btn-show-ticket {
+      background: #34495e;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .admin-panel {
+      margin-top: 15px;
+      padding-top: 12px;
+      border-top: 1px dashed #cbd5e1;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .btn-admin-reset {
+      background: transparent;
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.75);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 12px;
+    }
+    .modal-ticket, .modal-admin {
+      background: white;
+      padding: 25px 20px;
+      border-radius: 16px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    }
+    .modal-ticket { border: 4px dashed #1a252f; }
+    .modal-ticket h3 { margin: 0 0 10px 0; font-size: 20px; color: #555; }
+    .modal-ticket .window-title { font-size: 26px; font-weight: 800; color: #1a252f; }
+    .modal-ticket .number { font-size: 72px; font-weight: 900; margin: 15px 0; color: #000; line-height: 1; }
+    .modal-ticket .time-stamp { font-size: 15px; color: #666; margin-top: 10px; }
+
+    .admin-input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .btn-modal {
+      margin-top: 15px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      font-size: 15px;
+    }
+    .btn-close { background: #7f8c8d; }
+    .btn-print { background: #27ae60; margin-left: 10px; }
+    .btn-danger { background: #e74c3c; width: 100%; }
+
+    @media (max-width: 600px) {
+      body { padding: 8px; }
+      .card { padding: 15px; }
+      .btn-group { flex-direction: column; }
+      .btn { width: 100%; padding: 15px; }
+      .modal-ticket .number { font-size: 64px; }
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+    <h2>Запись в очередь СИЗО</h2>
+    <div class="subtitle">Общая электронная система передач</div>
+
+    <div class="btn-group">
+      <button id="btnW2" class="btn btn-w2" onclick="registerUser(2)">Встать в очередь (Окошко №2)</button>
+      <button id="btnW3" class="btn btn-w3" onclick="registerUser(3)">Встать в очередь (Окошко №3)</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Общий список очереди на сегодня</h3>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>№ Талона</th>
+            <th>Окно</th>
+            <th>Время</th>
+            <th>Талон</th>
+          </tr>
+        </thead>
+        <tbody id="queueTableBody">
+          <tr><td colspan="4" style="text-align:center; color:#888;">Загрузка общей базы...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="admin-panel">
+      <button class="btn-admin-reset" onclick="openAdminModal()">⚙️ Вход для очистки (Админ)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно просмотра талона -->
+<div id="modalOverlay" class="modal-overlay">
+  <div class="modal-ticket">
+    <h3>ТАЛОН ОЧЕРЕДИ</h3>
+    <div id="mWindow" class="window-title"></div>
+    <div id="mNumber" class="number"></div>
+    <div id="mTime" class="time-stamp"></div>
+    
+    <div>
+      <button class="btn-modal btn-close" onclick="closeModal('modalOverlay')">Закрыть</button>
+      <button class="btn-modal btn-print" onclick="window.print()">Печать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно авторизации Админа -->
+<div id="adminModalOverlay" class="modal-overlay">
+  <div class="modal-admin">
+    <h3>АВТОРИЗАЦИЯ АДМИНИСТРАТОРА</h3>
+    <p style="font-size:12px; color:#666;">Введите логин и пароль для очистки очереди</p>
+    
+    <input type="email" id="adminEmail" class="admin-input" placeholder="Email">
+    <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль">
+    
+    <button class="btn-modal btn-danger" onclick="submitAdminReset()">Войти и очистить очередь</button>
+    <button class="btn-modal btn-close" style="width:100%; margin-top:8px;" onclick="closeModal('adminModalOverlay')">Отмена</button>
+  </div>
+</div>
+
+<script>
+  const firebaseConfig = { 
+    apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI", 
+    authDomain: "window-54e93.firebaseapp.com", 
+    databaseURL: "https://window-54e93-default-rtdb.europe-west1.firebasedatabase.app", 
+    projectId: "window-54e93", 
+    storageBucket: "window-54e93.firebasestorage.app", 
+    messagingSenderId: "214954614953", 
+    appId: "1:214954614953:web:7832b8368aea4fa19a09b8", 
+    measurementId: "G-HX2G4YJW6C" 
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const auth = firebase.auth();
+
+  let queueItems = [];
+
+  function getTodayString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  const todayStr = getTodayString();
+  const queueRef = db.ref('queues/' + todayStr);
+
+  queueRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    queueItems = [];
+    if (data) {
+      Object.keys(data).forEach(key => {
+        queueItems.push(data[key]);
+      });
+    }
+    renderTable();
+  }, (error) => {
+    alert("Ошибка соединения с базой: " + error.message);
+  });
+
+  function registerUser(windowNum) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    
+    const countInWindow = queueItems.filter(i => i.windowNum === windowNum).length + 1;
+    const code = `О${windowNum}-${String(countInWindow).padStart(3, '0')}`;
+
+    const newItem = {
+      code: code,
+      windowNum: windowNum,
+      time: timeStr,
+      timestamp: Date.now()
+    };
+
+    queueRef.push(newItem).then(() => {
+      showTicket(code);
+    }).catch(err => {
+      alert("Ошибка записи в базу с телефона: " + err.message);
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('queueTableBody');
+    if (queueItems.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';
+      return;
+    }
+
+    const sorted = [...queueItems].sort((a, b) => b.timestamp - a.timestamp);
+
+    tbody.innerHTML = sorted.map(item => `
+      <tr>
+        <td><strong>${item.code}</strong></td>
+        <td>Окно №${item.windowNum}</td>
+        <td>${item.time}</td>
+        <td>
+          <button class="btn-show-ticket" onclick="showTicket('${item.code}')">Талон</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function openAdminModal() {
+    document.getElementById('adminModalOverlay').style.display = 'flex';
+  }
+
+  function submitAdminReset() {
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPassword').value.trim();
+
+    if (!email || !password) {
+      alert('Введите email и пароль');
+      return;
+    }
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        if (confirm('Авторизация успешна! Очистить всю общую очередь?')) {
+          return queueRef.remove().then(() => {
+            alert('Очередь успешно очищена!');
+            closeModal('adminModalOverlay');
+            auth.signOut();
+          });
+        }
+      })
+      .catch((error) => {
+        alert('Ошибка авторизации: ' + error.message);
+      });
+  }
+
+  function showTicket(code) {
+    const item = queueItems.find(i => i.code === code);
+    if (!item) return;
+
+    document.getElementById('mWindow').innerText = `ОКОШКО №${item.windowNum}`;
+    document.getElementById('mNumber').innerText = item.code;
+    document.getElementById('mTime').innerText = `Выдан: ${item.time}`;
+
+    document.getElementById('modalOverlay').style.display = 'flex';
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
