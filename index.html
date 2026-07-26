@@ -57,9 +57,32 @@
       border: 1px solid #ffeeba;
       border-radius: 8px;
       margin-bottom: 15px;
-      text-align: center;
       font-size: 13px;
       line-height: 1.4;
+    }
+
+    /* Стиль флекс-контейнера для расположения кнопки слева от текста */
+    .alert-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-alert-ticket {
+      background-color: #34495e;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .btn-alert-ticket:hover {
+      background-color: #2c3e50;
     }
 
     .form-group {
@@ -224,6 +247,7 @@
       .ticket-search-box { flex-direction: column; }
       .btn-find-ticket { width: 100%; padding: 14px; }
       .modal-ticket .number { font-size: 54px; }
+      .alert-content { flex-direction: row; }
     }
   </style>
 
@@ -381,7 +405,15 @@
       if (nameBlock) nameBlock.style.display = 'none';
       if (alertBox) {
         alertBox.style.display = 'block';
-        alertBox.innerHTML = `⚠️ <strong>${existing.userName || 'Посетитель'}, вы уже записаны под номером <u style="cursor:pointer;" onclick="showTicket('${existing.code}')">${existing.code}</u></strong>.<br>Повторная запись с этого устройства заблокирована.`;
+        alertBox.innerHTML = `
+          <div class="alert-content">
+            <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Талон</button>
+            <div>
+              ⚠️ <strong>${existing.userName || 'Посетитель'}</strong>, вы уже записаны под номером <strong>${existing.code}</strong>.<br>
+              Повторная запись с этого устройства заблокирована.
+            </div>
+          </div>
+        `;
       }
     } else {
       btnW2.disabled = false;
@@ -456,7 +488,6 @@
     `).join('');
   }
 
-  // Поиск и показ талона по коду или имени
   function searchAndShowTicket() {
     const input = document.getElementById('searchTicketCode').value.trim().toLowerCase();
     if (!input) {
