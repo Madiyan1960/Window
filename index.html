@@ -428,7 +428,7 @@
   const auth = firebase.auth();
 
   let queueItems = [];
-  let currentPhotoBase64 = ""; // Сохраняем обработанную фотографию
+  let currentPhotoBase64 = "";
 
   function getTodayString() {
     const d = new Date();
@@ -467,34 +467,24 @@
       });
     }
     
-    checkTimeAndCleanup();
     renderTable();
     checkDeviceRegistration();
   }, (error) => {
     alert("Ошибка базы данных: " + error.message);
   });
 
+  // Проверка рабочего времени (06:00 - 17:00)
   function isWorkingHours() {
     const now = new Date();
     const hours = now.getHours();
     return hours >= 6 && hours < 17;
   }
 
-  function checkTimeAndCleanup() {
-    const now = new Date();
-    const hours = now.getHours();
-
-    if (hours >= 17 && queueItems.length > 0) {
-      queueRef.remove().catch(err => console.log("Автоматическая очистка: ", err));
-    }
-  }
-
+  // Периодическая проверка статуса работы
   setInterval(() => {
-    checkTimeAndCleanup();
     checkDeviceRegistration();
   }, 60000);
 
-  // Обработка загрузки и авто-сжатие изображения
   function handlePhotoSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -503,7 +493,6 @@
     reader.onload = function(e) {
       const img = new Image();
       img.onload = function() {
-        // Сжимаем фото до разрешения максимум 400x400 пикселей
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
@@ -526,7 +515,7 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.7); // Качество 70%
+        currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
 
         const preview = document.getElementById('photoPreview');
         preview.src = currentPhotoBase64;
@@ -557,17 +546,38 @@
     const alertBox = document.getElementById('alertBox');
     const registrationBlock = document.getElementById('registrationBlock');
 
+    // Если время НЕ рабочее (раньше 06:00 или позже 17:00)
     if (!isWorkingHours()) {
       btnW2.disabled = true;
       btnW3.disabled = true;
-      if (registrationBlock) registrationBlock.style.display = 'none';
-      if (alertBox) {
-        alertBox.style.display = 'block';
-        alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 17:00.`;
+
+      // Если пользователь успел записаться в рабочие часы — показываем ему талон
+      if (existing) {
+        if (registrationBlock) registrationBlock.style.display = 'none';
+        if (alertBox) {
+          alertBox.style.display = 'block';
+          alertBox.innerHTML = `
+            <div class="alert-content">
+              <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Талон</button>
+              <div>
+                ⚠️ <strong>${existing.userName || 'Посетитель'}</strong>, вы зарегистрированы под номером <strong>${existing.code}</strong>.<br>
+                Прием новых заявок на сегодня завершен (работает с 06:00 до 17:00).
+              </div>
+            </div>
+          `;
+        }
+      } else {
+        // Если талона нет — просто показываем предупреждение о закрытии записи
+        if (registrationBlock) registrationBlock.style.display = 'none';
+        if (alertBox) {
+          alertBox.style.display = 'block';
+          alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 17:00. Все выданные ранее талоны отображаются в таблице ниже.`;
+        }
       }
       return;
     }
 
+    // Если время рабочее (06:00 - 17:00)
     if (existing) {
       btnW2.disabled = true;
       btnW3.disabled = true;
