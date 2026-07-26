@@ -242,8 +242,8 @@
     <div id="alertBox" class="alert-box"></div>
 
     <div id="nameBlock" class="form-group">
-      <label for="userName">Введите Ваше Имя:</label>
-      <input type="text" id="userName" class="input-field" placeholder="Например: Мереке" autocomplete="off">
+      <label for="userName">Введите Ваше Имя / ФИО:</label>
+      <input type="text" id="userName" class="input-field" placeholder="Например: Иванов Иван" autocomplete="off">
     </div>
 
     <div class="btn-group">
@@ -253,7 +253,7 @@
   </div>
 
   <div class="card">
-    <h3>Общий список очереди на сегодня</h3>
+    <h3 id="tableHeaderTitle">Общий список очереди на сегодня</h3>
 
     <div class="table-responsive">
       <table>
@@ -330,6 +330,11 @@
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
+  function getFormattedTodayDate() {
+    const d = new Date();
+    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+  }
+
   function getDeviceId() {
     try {
       let devId = localStorage.getItem('sizo_device_id');
@@ -346,6 +351,9 @@
   const todayStr = getTodayString();
   const queueRef = db.ref('queues/' + todayStr);
 
+  // Вставка текущей даты в заголовок
+  document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;
+
   queueRef.on('value', (snapshot) => {
     const data = snapshot.val();
     queueItems = [];
@@ -354,11 +362,37 @@
         queueItems.push(data[key]);
       });
     }
+    
+    // Проверка автоматической очистки после 17:00
+    checkTimeAndCleanup();
     renderTable();
     checkDeviceRegistration();
   }, (error) => {
     alert("Ошибка базы данных: " + error.message);
   });
+
+  // Проверка рабочего времени (6:00 - 17:00) и очистка после 17:00
+  function isWorkingHours() {
+    const now = new Date();
+    const hours = now.getHours();
+    return hours >= 6 && hours < 17;
+  }
+
+  function checkTimeAndCleanup() {
+    const now = new Date();
+    const hours = now.getHours();
+
+    // Если время 17:00 и позже, и в базе есть записи — очищаем список за сегодня
+    if (hours >= 17 && queueItems.length > 0) {
+      queueRef.remove().catch(err => console.log("Автоматическая очистка: ", err));
+    }
+  }
+
+  // Запускаем проверку времени каждую минуту
+  setInterval(() => {
+    checkTimeAndCleanup();
+    checkDeviceRegistration();
+  }, 60000);
 
   function checkDeviceRegistration() {
     const currentDevId = getDeviceId();
@@ -368,6 +402,18 @@
     const btnW3 = document.getElementById('btnW3');
     const alertBox = document.getElementById('alertBox');
     const nameBlock = document.getElementById('nameBlock');
+
+    // Проверка ограничений по времени работы (06:00 - 17:00)
+    if (!isWorkingHours()) {
+      btnW2.disabled = true;
+      btnW3.disabled = true;
+      if (nameBlock) nameBlock.style.display = 'none';
+      if (alertBox) {
+        alertBox.style.display = 'block';
+        alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 17:00.`;
+      }
+      return;
+    }
 
     if (existing) {
       btnW2.disabled = true;
@@ -394,6 +440,11 @@
   }
 
   function registerUser(windowNum) {
+    if (!isWorkingHours()) {
+      alert("Запись открыта только с 06:00 до 17:00!");
+      return;
+    }
+
     const currentDevId = getDeviceId();
 
     const existing = queueItems.find(item => item.devId === currentDevId);
