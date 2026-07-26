@@ -61,7 +61,6 @@
       line-height: 1.4;
     }
 
-    /* Стиль флекс-контейнера для расположения кнопки слева от текста */
     .alert-content {
       display: flex;
       align-items: center;
@@ -130,27 +129,6 @@
     .btn-w3 { background-color: #2980b9; }
     .btn-w3:hover { background-color: #216997; }
     .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
-
-    /* Панель поиска талона вверху таблицы */
-    .ticket-search-box {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    .btn-find-ticket {
-      background-color: #34495e;
-      color: white;
-      border: none;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
-      white-space: nowrap;
-    }
-    .btn-find-ticket:hover {
-      background-color: #2c3e50;
-    }
 
     .table-responsive {
       width: 100%;
@@ -244,8 +222,6 @@
       .card { padding: 15px; }
       .btn-group { flex-direction: column; }
       .btn { width: 100%; padding: 15px; }
-      .ticket-search-box { flex-direction: column; }
-      .btn-find-ticket { width: 100%; padding: 14px; }
       .modal-ticket .number { font-size: 54px; }
       .alert-content { flex-direction: row; }
     }
@@ -278,12 +254,6 @@
 
   <div class="card">
     <h3>Общий список очереди на сегодня</h3>
-
-    <!-- Верхний блок для открытия талона -->
-    <div class="ticket-search-box">
-      <input type="text" id="searchTicketCode" class="input-field" placeholder="Введите № талона (например: О2-001) или имя">
-      <button class="btn-find-ticket" onclick="searchAndShowTicket()">🎫 Посмотреть талон</button>
-    </div>
 
     <div class="table-responsive">
       <table>
@@ -486,25 +456,6 @@
         <td>${item.time}</td>
       </tr>
     `).join('');
-  }
-
-  function searchAndShowTicket() {
-    const input = document.getElementById('searchTicketCode').value.trim().toLowerCase();
-    if (!input) {
-      alert('Введите номер талона или имя для поиска!');
-      return;
-    }
-
-    const found = queueItems.find(item => 
-      item.code.toLowerCase() === input || 
-      (item.userName && item.userName.toLowerCase().includes(input))
-    );
-
-    if (found) {
-      showTicket(found.code);
-    } else {
-      alert('Талон с таким номером или именем не найден в очереди!');
-    }
   }
 
   function openAdminModal() {
