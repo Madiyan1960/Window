@@ -288,7 +288,6 @@
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
-  // Надежный идентификатор устройства
   function getDeviceId() {
     try {
       let devId = localStorage.getItem('sizo_device_id');
@@ -305,7 +304,6 @@
   const todayStr = getTodayString();
   const queueRef = db.ref('queues/' + todayStr);
 
-  // Подписка на обновления базы
   queueRef.on('value', (snapshot) => {
     const data = snapshot.val();
     queueItems = [];
@@ -320,7 +318,6 @@
     alert("Ошибка базы данных: " + error.message);
   });
 
-  // Проверка: берет ли устройство талон повторно
   function checkDeviceRegistration() {
     const currentDevId = getDeviceId();
     const existing = queueItems.find(item => item.devId === currentDevId);
@@ -343,7 +340,6 @@
     }
   }
 
-  // Запись пользователя
   function registerUser(windowNum) {
     const currentDevId = getDeviceId();
 
@@ -382,7 +378,13 @@
       return;
     }
 
-    const sorted = [...queueItems].sort((a, b) => b.timestamp - a.timestamp);
+    // Сначала разделяем по окнам (№2 идет первым), затем сортируем номера по возрастанию (О2-001, О2-002...)
+    const sorted = [...queueItems].sort((a, b) => {
+      if (a.windowNum !== b.windowNum) {
+        return a.windowNum - b.windowNum;
+      }
+      return a.code.localeCompare(b.code, undefined, { numeric: true, sensitivity: 'base' });
+    });
 
     tbody.innerHTML = sorted.map(item => `
       <tr>
