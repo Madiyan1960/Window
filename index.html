@@ -107,6 +107,69 @@
       border-color: #2980b9;
     }
 
+    /* Блок загрузки / сьемки фото */
+    .photo-upload-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px dashed #cbd5e1;
+    }
+    .photo-preview {
+      width: 110px;
+      height: 110px;
+      border-radius: 8px;
+      object-fit: cover;
+      background-color: #e2e8f0;
+      display: none;
+      border: 2px solid #34495e;
+    }
+    .btn-photo {
+      background-color: #34495e;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+    }
+
+    /* Блок согласия с правилами */
+    .consent-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 15px;
+      font-size: 12px;
+      color: #4a5568;
+      line-height: 1.4;
+      background: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    .consent-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .consent-group label {
+      cursor: pointer;
+      user-select: none;
+    }
+    .consent-group a {
+      color: #2980b9;
+      text-decoration: underline;
+    }
+
     .btn-group {
       display: flex;
       gap: 10px;
@@ -120,7 +183,7 @@
       border-radius: 8px;
       cursor: pointer;
       color: white;
-      transition: background 0.2s, transform 0.1s;
+      transition: background 0.2s, transform 0.1s, opacity 0.2s;
       touch-action: manipulation;
     }
     .btn:active { transform: scale(0.98); }
@@ -128,7 +191,7 @@
     .btn-w2:hover { background-color: #219150; }
     .btn-w3 { background-color: #2980b9; }
     .btn-w3:hover { background-color: #216997; }
-    .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+    .btn:disabled { background-color: #cbd5e1; color: #94a3b8; cursor: not-allowed; transform: none; }
 
     .table-responsive {
       width: 100%;
@@ -178,7 +241,7 @@
       z-index: 1000;
       padding: 12px;
     }
-    .modal-ticket, .modal-admin {
+    .modal-ticket, .modal-admin, .modal-policy {
       background: white;
       padding: 25px 20px;
       border-radius: 16px;
@@ -189,10 +252,19 @@
     }
     .modal-ticket { border: 4px dashed #1a252f; }
     .modal-ticket h3 { margin: 0 0 10px 0; font-size: 20px; color: #555; }
+    .modal-ticket .ticket-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; border: 3px solid #34495e; }
     .modal-ticket .user-name { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
     .modal-ticket .window-title { font-size: 24px; font-weight: 800; color: #1a252f; }
     .modal-ticket .number { font-size: 64px; font-weight: 900; margin: 10px 0; color: #000; line-height: 1; }
     .modal-ticket .time-stamp { font-size: 14px; color: #666; margin-top: 10px; }
+
+    .modal-policy {
+      text-align: left;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-policy h3 { text-align: center; margin-top: 0; }
+    .modal-policy p { font-size: 13px; color: #4a5568; line-height: 1.5; }
 
     .admin-input {
       width: 100%;
@@ -241,14 +313,31 @@
 
     <div id="alertBox" class="alert-box"></div>
 
-    <div id="nameBlock" class="form-group">
-      <label for="userName">Введите Ваше Имя</label>
-      <input type="text" id="userName" class="input-field" placeholder="Например: Мереке" autocomplete="off">
-    </div>
+    <div id="registrationBlock">
+      <div id="nameBlock" class="form-group">
+        <label for="userName">Введите Ваше Имя / ФИО:</label>
+        <input type="text" id="userName" class="input-field" placeholder="Например: Иванов Иван" autocomplete="off">
+      </div>
 
-    <div class="btn-group">
-      <button id="btnW2" class="btn btn-w2" onclick="registerUser(2)">Встать в очередь (Окошко №2)</button>
-      <button id="btnW3" class="btn btn-w3" onclick="registerUser(3)">Встать в очередь (Окошко №3)</button>
+      <!-- Блок загрузки Фото -->
+      <div class="photo-upload-container">
+        <img id="photoPreview" class="photo-preview" alt="Предпросмотр фото">
+        <label for="photoInput" class="btn-photo">📷 Сделать или выбрать фото</label>
+        <input type="file" id="photoInput" accept="image/*" capture="user" style="display:none;" onchange="handlePhotoSelect(event)">
+      </div>
+
+      <!-- Чекбокс согласия с правилами -->
+      <div class="consent-group">
+        <input type="checkbox" id="consentCheckbox" onchange="toggleButtonsState()">
+        <label for="consentCheckbox">
+          Я согласен с <a href="javascript:void(0)" onclick="openPolicyModal()">правилами записи</a> и даю согласие на обработку, а также публикацию моих персональных данных (ФИО и Фото) в открытом списке очереди.
+        </label>
+      </div>
+
+      <div class="btn-group">
+        <button id="btnW2" class="btn btn-w2" onclick="registerUser(2)" disabled>Встать в очередь (Окошко №2)</button>
+        <button id="btnW3" class="btn btn-w3" onclick="registerUser(3)" disabled>Встать в очередь (Окошко №3)</button>
+      </div>
     </div>
   </div>
 
@@ -281,6 +370,7 @@
 <div id="modalOverlay" class="modal-overlay">
   <div class="modal-ticket">
     <h3>ТАЛОН ОЧЕРЕДИ</h3>
+    <img id="mPhoto" class="ticket-img" style="display:none;" alt="Фото посетителя">
     <div id="mName" class="user-name"></div>
     <div id="mWindow" class="window-title"></div>
     <div id="mNumber" class="number"></div>
@@ -289,6 +379,20 @@
     <div>
       <button class="btn-modal btn-close" onclick="closeModal('modalOverlay')">Закрыть</button>
       <button class="btn-modal btn-print" onclick="window.print()">Печать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно Политики и Согласия -->
+<div id="policyModalOverlay" class="modal-overlay">
+  <div class="modal-policy">
+    <h3>Правила записи и Согласие на обработку персональных данных</h3>
+    <p>Настоящим, оформляя запись в электронную очередь на передачу, Вы даете добровольное согласие на:</p>
+    <p>1. Сбор и обработку Ваших персональных данных (ФИО, фотографическое изображение, время записи) в соответствии с Законодательством о персональных данных.</p>
+    <p>2. Публикацию введенных Вами сведений (ФИО и номер талона) в общедоступном списке электронной очереди СИЗО для обеспечения прозрачности порядка обращения посетителей.</p>
+    <p>3. Соблюдение установленных временных интервалов и правил внутреннего порядка учреждении.</p>
+    <div style="text-align:center;">
+      <button class="btn-modal btn-close" onclick="closeModal('policyModalOverlay')">Понятно</button>
     </div>
   </div>
 </div>
@@ -324,6 +428,7 @@
   const auth = firebase.auth();
 
   let queueItems = [];
+  let currentPhotoBase64 = ""; // Сохраняем обработанную фотографию
 
   function getTodayString() {
     const d = new Date();
@@ -351,7 +456,6 @@
   const todayStr = getTodayString();
   const queueRef = db.ref('queues/' + todayStr);
 
-  // Вставка текущей даты в заголовок
   document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;
 
   queueRef.on('value', (snapshot) => {
@@ -363,7 +467,6 @@
       });
     }
     
-    // Проверка автоматической очистки после 17:00
     checkTimeAndCleanup();
     renderTable();
     checkDeviceRegistration();
@@ -371,7 +474,6 @@
     alert("Ошибка базы данных: " + error.message);
   });
 
-  // Проверка рабочего времени (6:00 - 17:00) и очистка после 17:00
   function isWorkingHours() {
     const now = new Date();
     const hours = now.getHours();
@@ -382,17 +484,69 @@
     const now = new Date();
     const hours = now.getHours();
 
-    // Если время 17:00 и позже, и в базе есть записи — очищаем список за сегодня
     if (hours >= 17 && queueItems.length > 0) {
       queueRef.remove().catch(err => console.log("Автоматическая очистка: ", err));
     }
   }
 
-  // Запускаем проверку времени каждую минуту
   setInterval(() => {
     checkTimeAndCleanup();
     checkDeviceRegistration();
   }, 60000);
+
+  // Обработка загрузки и авто-сжатие изображения
+  function handlePhotoSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        // Сжимаем фото до разрешения максимум 400x400 пикселей
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 400;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height *= maxDim / width;
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width *= maxDim / height;
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.7); // Качество 70%
+
+        const preview = document.getElementById('photoPreview');
+        preview.src = currentPhotoBase64;
+        preview.style.display = 'block';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function toggleButtonsState() {
+    const isChecked = document.getElementById('consentCheckbox').checked;
+    const currentDevId = getDeviceId();
+    const existing = queueItems.find(item => item.devId === currentDevId);
+
+    if (isWorkingHours() && !existing) {
+      document.getElementById('btnW2').disabled = !isChecked;
+      document.getElementById('btnW3').disabled = !isChecked;
+    }
+  }
 
   function checkDeviceRegistration() {
     const currentDevId = getDeviceId();
@@ -401,13 +555,12 @@
     const btnW2 = document.getElementById('btnW2');
     const btnW3 = document.getElementById('btnW3');
     const alertBox = document.getElementById('alertBox');
-    const nameBlock = document.getElementById('nameBlock');
+    const registrationBlock = document.getElementById('registrationBlock');
 
-    // Проверка ограничений по времени работы (06:00 - 17:00)
     if (!isWorkingHours()) {
       btnW2.disabled = true;
       btnW3.disabled = true;
-      if (nameBlock) nameBlock.style.display = 'none';
+      if (registrationBlock) registrationBlock.style.display = 'none';
       if (alertBox) {
         alertBox.style.display = 'block';
         alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 17:00.`;
@@ -418,7 +571,7 @@
     if (existing) {
       btnW2.disabled = true;
       btnW3.disabled = true;
-      if (nameBlock) nameBlock.style.display = 'none';
+      if (registrationBlock) registrationBlock.style.display = 'none';
       if (alertBox) {
         alertBox.style.display = 'block';
         alertBox.innerHTML = `
@@ -432,10 +585,9 @@
         `;
       }
     } else {
-      btnW2.disabled = false;
-      btnW3.disabled = false;
-      if (nameBlock) nameBlock.style.display = 'block';
+      if (registrationBlock) registrationBlock.style.display = 'block';
       if (alertBox) alertBox.style.display = 'none';
+      toggleButtonsState();
     }
   }
 
@@ -445,12 +597,9 @@
       return;
     }
 
-    const currentDevId = getDeviceId();
-
-    const existing = queueItems.find(item => item.devId === currentDevId);
-    if (existing) {
-      alert(`Вы уже брали талон на сегодня: ${existing.code}`);
-      showTicket(existing.code);
+    const consentChecked = document.getElementById('consentCheckbox').checked;
+    if (!consentChecked) {
+      alert("Для продолжения необходимо подтвердить согласие с правилами!");
       return;
     }
 
@@ -460,6 +609,20 @@
     if (!userName) {
       alert("Пожалуйста, введите Ваше имя перед выбором окошка!");
       nameInput.focus();
+      return;
+    }
+
+    if (!currentPhotoBase64) {
+      alert("Пожалуйста, сделайте или загрузите фото перед записью!");
+      return;
+    }
+
+    const currentDevId = getDeviceId();
+
+    const existing = queueItems.find(item => item.devId === currentDevId);
+    if (existing) {
+      alert(`Вы уже брали талон на сегодня: ${existing.code}`);
+      showTicket(existing.code);
       return;
     }
 
@@ -473,6 +636,7 @@
       code: code,
       userName: userName,
       windowNum: windowNum,
+      photo: currentPhotoBase64,
       time: timeStr,
       devId: currentDevId,
       timestamp: Date.now()
@@ -509,6 +673,10 @@
     `).join('');
   }
 
+  function openPolicyModal() {
+    document.getElementById('policyModalOverlay').style.display = 'flex';
+  }
+
   function openAdminModal() {
     document.getElementById('adminModalOverlay').style.display = 'flex';
   }
@@ -540,6 +708,14 @@
   function showTicket(code) {
     const item = queueItems.find(i => i.code === code);
     if (!item) return;
+
+    const imgElem = document.getElementById('mPhoto');
+    if (item.photo) {
+      imgElem.src = item.photo;
+      imgElem.style.display = 'inline-block';
+    } else {
+      imgElem.style.display = 'none';
+    }
 
     document.getElementById('mName').innerText = item.userName || '';
     document.getElementById('mWindow').innerText = `ОКОШКО №${item.windowNum}`;
