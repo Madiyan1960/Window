@@ -107,7 +107,7 @@
       border-color: #2980b9;
     }
 
-    /* Блок загрузки / сьемки фото */
+    /* Блок загрузки / съемки фото */
     .photo-upload-container {
       display: flex;
       flex-direction: column;
@@ -210,8 +210,19 @@
       padding: 10px 8px;
       border-bottom: 1px solid #e2e8f0;
       text-align: left;
+      vertical-align: middle;
     }
     th { background-color: #f8f9fa; color: #4a5568; }
+
+    /* Миниатюра фото в таблице */
+    .table-user-photo {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid #cbd5e1;
+      display: block;
+    }
 
     .admin-panel {
       margin-top: 15px;
@@ -349,13 +360,14 @@
         <thead>
           <tr>
             <th>№ Талона</th>
+            <th>Фото</th>
             <th>ФИО / Имя</th>
             <th>Окно</th>
             <th>Время</th>
           </tr>
         </thead>
         <tbody id="queueTableBody">
-          <tr><td colspan="4" style="text-align:center; color:#888;">Загрузка общей базы...</td></tr>
+          <tr><td colspan="5" style="text-align:center; color:#888;">Загрузка общей базы...</td></tr>
         </tbody>
       </table>
     </div>
@@ -389,8 +401,8 @@
     <h3>Правила записи и Согласие на обработку персональных данных</h3>
     <p>Настоящим, оформляя запись в электронную очередь на передачу, Вы даете добровольное согласие на:</p>
     <p>1. Сбор и обработку Ваших персональных данных (ФИО, фотографическое изображение, время записи) в соответствии с Законодательством о персональных данных.</p>
-    <p>2. Публикацию введенных Вами сведений (ФИО и номер талона) в общедоступном списке электронной очереди СИЗО для обеспечения прозрачности порядка обращения посетителей.</p>
-    <p>3. Соблюдение установленных временных интервалов и правил внутреннего порядка учреждении.</p>
+    <p>2. Публикацию введенных Вами сведений (ФИО, Фотографии и номера талона) в общедоступном списке электронной очереди СИЗО для обеспечения прозрачности порядка обращения посетителей.</p>
+    <p>3. Соблюдение установленных временных интервалов и правил внутреннего порядка учреждения.</p>
     <div style="text-align:center;">
       <button class="btn-modal btn-close" onclick="closeModal('policyModalOverlay')">Понятно</button>
     </div>
@@ -473,14 +485,13 @@
     alert("Ошибка базы данных: " + error.message);
   });
 
-  // Проверка рабочего времени (06:00 - 17:00)
+  // Проверка рабочего времени строго с 06:00 до 10:00
   function isWorkingHours() {
     const now = new Date();
     const hours = now.getHours();
-    return hours >= 6 && hours < 17;
+    return hours >= 6 && hours < 10;
   }
 
-  // Периодическая проверка статуса работы
   setInterval(() => {
     checkDeviceRegistration();
   }, 60000);
@@ -546,12 +557,11 @@
     const alertBox = document.getElementById('alertBox');
     const registrationBlock = document.getElementById('registrationBlock');
 
-    // Если время НЕ рабочее (раньше 06:00 или позже 17:00)
+    // Ограничение с 06:00 до 10:00
     if (!isWorkingHours()) {
       btnW2.disabled = true;
       btnW3.disabled = true;
 
-      // Если пользователь успел записаться в рабочие часы — показываем ему талон
       if (existing) {
         if (registrationBlock) registrationBlock.style.display = 'none';
         if (alertBox) {
@@ -561,23 +571,21 @@
               <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Талон</button>
               <div>
                 ⚠️ <strong>${existing.userName || 'Посетитель'}</strong>, вы зарегистрированы под номером <strong>${existing.code}</strong>.<br>
-                Прием новых заявок на сегодня завершен (работает с 06:00 до 17:00).
+                Прием новых заявок на сегодня завершен (работает с 06:00 до 10:00).
               </div>
             </div>
           `;
         }
       } else {
-        // Если талона нет — просто показываем предупреждение о закрытии записи
         if (registrationBlock) registrationBlock.style.display = 'none';
         if (alertBox) {
           alertBox.style.display = 'block';
-          alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 17:00. Все выданные ранее талоны отображаются в таблице ниже.`;
+          alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 10:00. Все выданные ранее талоны отображаются в таблице ниже.`;
         }
       }
       return;
     }
 
-    // Если время рабочее (06:00 - 17:00)
     if (existing) {
       btnW2.disabled = true;
       btnW3.disabled = true;
@@ -603,7 +611,7 @@
 
   function registerUser(windowNum) {
     if (!isWorkingHours()) {
-      alert("Запись открыта только с 06:00 до 17:00!");
+      alert("Запись открыта только с 06:00 до 10:00!");
       return;
     }
 
@@ -662,7 +670,7 @@
   function renderTable() {
     const tbody = document.getElementById('queueTableBody');
     if (queueItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';
       return;
     }
 
@@ -676,6 +684,11 @@
     tbody.innerHTML = sorted.map(item => `
       <tr>
         <td><strong>${item.code}</strong></td>
+        <td>
+          ${item.photo 
+            ? `<img src="${item.photo}" class="table-user-photo" alt="Фото">` 
+            : '<span style="color:#aaa;">—</span>'}
+        </td>
         <td>${item.userName || '—'}</td>
         <td>Окно №${item.windowNum}</td>
         <td>${item.time}</td>
