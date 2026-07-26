@@ -62,6 +62,29 @@
       line-height: 1.4;
     }
 
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .input-name {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-name:focus {
+      border-color: #2980b9;
+    }
+
     .btn-group {
       display: flex;
       gap: 10px;
@@ -155,9 +178,10 @@
     }
     .modal-ticket { border: 4px dashed #1a252f; }
     .modal-ticket h3 { margin: 0 0 10px 0; font-size: 20px; color: #555; }
-    .modal-ticket .window-title { font-size: 26px; font-weight: 800; color: #1a252f; }
-    .modal-ticket .number { font-size: 72px; font-weight: 900; margin: 15px 0; color: #000; line-height: 1; }
-    .modal-ticket .time-stamp { font-size: 15px; color: #666; margin-top: 10px; }
+    .modal-ticket .user-name { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+    .modal-ticket .window-title { font-size: 24px; font-weight: 800; color: #1a252f; }
+    .modal-ticket .number { font-size: 64px; font-weight: 900; margin: 10px 0; color: #000; line-height: 1; }
+    .modal-ticket .time-stamp { font-size: 14px; color: #666; margin-top: 10px; }
 
     .admin-input {
       width: 100%;
@@ -187,7 +211,7 @@
       .card { padding: 15px; }
       .btn-group { flex-direction: column; }
       .btn { width: 100%; padding: 15px; }
-      .modal-ticket .number { font-size: 64px; }
+      .modal-ticket .number { font-size: 54px; }
     }
   </style>
 
@@ -205,6 +229,11 @@
 
     <div id="alertBox" class="alert-box"></div>
 
+    <div id="nameBlock" class="form-group">
+      <label for="userName">Введите Ваше Имя / ФИО:</label>
+      <input type="text" id="userName" class="input-name" placeholder="Например: Иванов Иван" autocomplete="off">
+    </div>
+
     <div class="btn-group">
       <button id="btnW2" class="btn btn-w2" onclick="registerUser(2)">Встать в очередь (Окошко №2)</button>
       <button id="btnW3" class="btn btn-w3" onclick="registerUser(3)">Встать в очередь (Окошко №3)</button>
@@ -219,13 +248,14 @@
         <thead>
           <tr>
             <th>№ Талона</th>
+            <th>ФИО / Имя</th>
             <th>Окно</th>
             <th>Время</th>
             <th>Талон</th>
           </tr>
         </thead>
         <tbody id="queueTableBody">
-          <tr><td colspan="4" style="text-align:center; color:#888;">Загрузка общей базы...</td></tr>
+          <tr><td colspan="5" style="text-align:center; color:#888;">Загрузка общей базы...</td></tr>
         </tbody>
       </table>
     </div>
@@ -240,6 +270,7 @@
 <div id="modalOverlay" class="modal-overlay">
   <div class="modal-ticket">
     <h3>ТАЛОН ОЧЕРЕДИ</h3>
+    <div id="mName" class="user-name"></div>
     <div id="mWindow" class="window-title"></div>
     <div id="mNumber" class="number"></div>
     <div id="mTime" class="time-stamp"></div>
@@ -325,17 +356,20 @@
     const btnW2 = document.getElementById('btnW2');
     const btnW3 = document.getElementById('btnW3');
     const alertBox = document.getElementById('alertBox');
+    const nameBlock = document.getElementById('nameBlock');
 
     if (existing) {
       btnW2.disabled = true;
       btnW3.disabled = true;
+      if (nameBlock) nameBlock.style.display = 'none';
       if (alertBox) {
         alertBox.style.display = 'block';
-        alertBox.innerHTML = `⚠️ <strong>Вы уже зарегистрированы под номером <u style="cursor:pointer;" onclick="showTicket('${existing.code}')">${existing.code}</u></strong>.<br>Повторная запись с этого устройства заблокирована.`;
+        alertBox.innerHTML = `⚠️ <strong>${existing.userName || 'Посетитель'}, вы уже записаны под номером <u style="cursor:pointer;" onclick="showTicket('${existing.code}')">${existing.code}</u></strong>.<br>Повторная запись с этого устройства заблокирована.`;
       }
     } else {
       btnW2.disabled = false;
       btnW3.disabled = false;
+      if (nameBlock) nameBlock.style.display = 'block';
       if (alertBox) alertBox.style.display = 'none';
     }
   }
@@ -350,6 +384,15 @@
       return;
     }
 
+    const nameInput = document.getElementById('userName');
+    const userName = nameInput.value.trim();
+
+    if (!userName) {
+      alert("Пожалуйста, введите Ваше имя перед выбором окошка!");
+      nameInput.focus();
+      return;
+    }
+
     const now = new Date();
     const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     
@@ -358,6 +401,7 @@
 
     const newItem = {
       code: code,
+      userName: userName,
       windowNum: windowNum,
       time: timeStr,
       devId: currentDevId,
@@ -374,11 +418,11 @@
   function renderTable() {
     const tbody = document.getElementById('queueTableBody');
     if (queueItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';
       return;
     }
 
-    // Сначала разделяем по окнам (№2 идет первым), затем сортируем номера по возрастанию (О2-001, О2-002...)
+    // Сортировка: сначала Окно №2, затем Окно №3. Внутри каждого окна номера идут по возрастанию
     const sorted = [...queueItems].sort((a, b) => {
       if (a.windowNum !== b.windowNum) {
         return a.windowNum - b.windowNum;
@@ -389,6 +433,7 @@
     tbody.innerHTML = sorted.map(item => `
       <tr>
         <td><strong>${item.code}</strong></td>
+        <td>${item.userName || '—'}</td>
         <td>Окно №${item.windowNum}</td>
         <td>${item.time}</td>
         <td>
@@ -430,6 +475,7 @@
     const item = queueItems.find(i => i.code === code);
     if (!item) return;
 
+    document.getElementById('mName').innerText = item.userName || '';
     document.getElementById('mWindow').innerText = `ОКОШКО №${item.windowNum}`;
     document.getElementById('mNumber').innerText = item.code;
     document.getElementById('mTime').innerText = `Выдан: ${item.time}`;
