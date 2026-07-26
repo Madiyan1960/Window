@@ -485,11 +485,11 @@
     alert("Ошибка базы данных: " + error.message);
   });
 
-  // Проверка рабочего времени строго с 06:00 до 10:00
+  // Проверка рабочего времени строго с 06:00 до 22:00
   function isWorkingHours() {
     const now = new Date();
     const hours = now.getHours();
-    return hours >= 6 && hours < 10;
+    return hours >= 6 && hours < 22;
   }
 
   setInterval(() => {
@@ -557,7 +557,7 @@
     const alertBox = document.getElementById('alertBox');
     const registrationBlock = document.getElementById('registrationBlock');
 
-    // Ограничение с 06:00 до 10:00
+    // Ограничение с 06:00 до 22:00
     if (!isWorkingHours()) {
       btnW2.disabled = true;
       btnW3.disabled = true;
@@ -571,7 +571,7 @@
               <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Талон</button>
               <div>
                 ⚠️ <strong>${existing.userName || 'Посетитель'}</strong>, вы зарегистрированы под номером <strong>${existing.code}</strong>.<br>
-                Прием новых заявок на сегодня завершен (работает с 06:00 до 10:00).
+                Прием новых заявок на сегодня завершен (работает с 06:00 до 22:00).
               </div>
             </div>
           `;
@@ -580,7 +580,7 @@
         if (registrationBlock) registrationBlock.style.display = 'none';
         if (alertBox) {
           alertBox.style.display = 'block';
-          alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 10:00. Все выданные ранее талоны отображаются в таблице ниже.`;
+          alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 22:00. Все выданные ранее талоны отображаются в таблице ниже.`;
         }
       }
       return;
@@ -611,7 +611,7 @@
 
   function registerUser(windowNum) {
     if (!isWorkingHours()) {
-      alert("Запись открыта только с 06:00 до 10:00!");
+      alert("Запись открыта только с 06:00 до 22:00!");
       return;
     }
 
