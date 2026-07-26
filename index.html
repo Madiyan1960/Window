@@ -49,6 +49,19 @@
       margin-bottom: 15px;
     }
 
+    .alert-box {
+      display: none;
+      padding: 12px;
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
     .btn-group {
       display: flex;
       gap: 10px;
@@ -56,7 +69,7 @@
     .btn {
       flex: 1;
       padding: 16px 10px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       border: none;
       border-radius: 8px;
@@ -70,6 +83,7 @@
     .btn-w2:hover { background-color: #219150; }
     .btn-w3 { background-color: #2980b9; }
     .btn-w3:hover { background-color: #216997; }
+    .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
 
     .table-responsive {
       width: 100%;
@@ -189,6 +203,8 @@
     <h2>Запись в очередь СИЗО</h2>
     <div class="subtitle">Общая электронная система передач</div>
 
+    <div id="alertBox" class="alert-box"></div>
+
     <div class="btn-group">
       <button id="btnW2" class="btn btn-w2" onclick="registerUser(2)">Встать в очередь (Окошко №2)</button>
       <button id="btnW3" class="btn btn-w3" onclick="registerUser(3)">Встать в очередь (Окошко №3)</button>
@@ -272,9 +288,24 @@
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
+  // Надежный идентификатор устройства
+  function getDeviceId() {
+    try {
+      let devId = localStorage.getItem('sizo_device_id');
+      if (!devId) {
+        devId = 'DEV-' + Math.random().toString(36).substring(2, 11) + '-' + Date.now();
+        localStorage.setItem('sizo_device_id', devId);
+      }
+      return devId;
+    } catch (e) {
+      return 'DEV-TEMP-' + Math.random().toString(36).substring(2, 9);
+    }
+  }
+
   const todayStr = getTodayString();
   const queueRef = db.ref('queues/' + todayStr);
 
+  // Подписка на обновления базы
   queueRef.on('value', (snapshot) => {
     const data = snapshot.val();
     queueItems = [];
@@ -284,11 +315,45 @@
       });
     }
     renderTable();
+    checkDeviceRegistration();
   }, (error) => {
-    alert("Ошибка соединения с базой: " + error.message);
+    alert("Ошибка базы данных: " + error.message);
   });
 
+  // Проверка: берет ли устройство талон повторно
+  function checkDeviceRegistration() {
+    const currentDevId = getDeviceId();
+    const existing = queueItems.find(item => item.devId === currentDevId);
+
+    const btnW2 = document.getElementById('btnW2');
+    const btnW3 = document.getElementById('btnW3');
+    const alertBox = document.getElementById('alertBox');
+
+    if (existing) {
+      btnW2.disabled = true;
+      btnW3.disabled = true;
+      if (alertBox) {
+        alertBox.style.display = 'block';
+        alertBox.innerHTML = `⚠️ <strong>Вы уже зарегистрированы под номером <u style="cursor:pointer;" onclick="showTicket('${existing.code}')">${existing.code}</u></strong>.<br>Повторная запись с этого устройства заблокирована.`;
+      }
+    } else {
+      btnW2.disabled = false;
+      btnW3.disabled = false;
+      if (alertBox) alertBox.style.display = 'none';
+    }
+  }
+
+  // Запись пользователя
   function registerUser(windowNum) {
+    const currentDevId = getDeviceId();
+
+    const existing = queueItems.find(item => item.devId === currentDevId);
+    if (existing) {
+      alert(`Вы уже брали талон на сегодня: ${existing.code}`);
+      showTicket(existing.code);
+      return;
+    }
+
     const now = new Date();
     const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     
@@ -299,13 +364,14 @@
       code: code,
       windowNum: windowNum,
       time: timeStr,
+      devId: currentDevId,
       timestamp: Date.now()
     };
 
     queueRef.push(newItem).then(() => {
       showTicket(code);
     }).catch(err => {
-      alert("Ошибка записи в базу с телефона: " + err.message);
+      alert("Ошибка записи в базу: " + err.message);
     });
   }
 
@@ -345,7 +411,7 @@
 
     auth.signInWithEmailAndPassword(email, password)
       .then(() => {
-        if (confirm('Авторизация успешна! Очистить всю общую очередь?')) {
+        if (confirm('Авторизация успешна! Очистить всю общую очередь на сегодня?')) {
           return queueRef.remove().then(() => {
             alert('Очередь успешно очищена!');
             closeModal('adminModalOverlay');
