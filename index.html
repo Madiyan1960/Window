@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Электронная очередь СИЗО — Общая база</title>
   
-  <!-- Подключение стилей карты Leaflet -->
+  <!-- Подключение стилей карты Leaflet и плагина Fullscreen -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-fullscreen@1.0.2/dist/leaflet.fullscreen.css" />
 
   <style>
     * {
@@ -82,13 +83,15 @@
     .geo-success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
     .geo-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
+    /* Увеличенная детальная карта */
     #mapContainer {
       width: 100%;
-      height: 250px;
-      border-radius: 10px;
+      height: 350px;
+      border-radius: 12px;
       margin-bottom: 10px;
-      border: 1px solid #cbd5e1;
+      border: 2px solid #cbd5e1;
       display: none;
+      z-index: 1;
     }
     .location-details {
       font-size: 11px;
@@ -217,11 +220,13 @@
       .btn { width: 100%; padding: 15px; }
       .modal-ticket .number { font-size: 54px; }
       .alert-content { flex-direction: row; }
+      #mapContainer { height: 280px; }
     }
   </style>
 
-  <!-- Скрипт карты Leaflet -->
+  <!-- Скрипт карты Leaflet и плагина Fullscreen -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-fullscreen@1.0.2/dist/Leaflet.fullscreen.min.js"></script>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -242,7 +247,7 @@
         📡 Определение вашей геолокации...
       </div>
 
-      <!-- Карта -->
+      <!-- Детальная карта -->
       <div id="mapContainer"></div>
       <div id="locationCoords" class="location-details" style="display:none;"></div>
 
@@ -287,7 +292,7 @@
           <tr>
             <th>№ Талона</th>
             <th>Фото</th>
-            <th>Имя</th>
+            <th>ФИО / Имя</th>
             <th>Окно</th>
             <th>Время</th>
           </tr>
@@ -402,7 +407,7 @@
     return R * c;
   }
 
-  // ИНИЦИАЛИЗАЦИЯ И ОТОБРАЖЕНИЕ КАРТЫ С МЕТКАМИ СИЗО И ПОЛЬЗОВАТЕЛЯ
+  // ВЫСОКОДЕТАЛИЗИРОВАННАЯ КАРТА ВЫСОКОГО РАЗРЕШЕНИЯ
   function verifyUserLocation() {
     const geoStatus = document.getElementById('geoStatus');
     const mapBox = document.getElementById('mapContainer');
@@ -427,7 +432,6 @@
         coordsBox.style.display = 'block';
         coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
 
-        // Красная иконка маркер для СИЗО
         const redIcon = L.icon({
           iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
           shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -438,35 +442,42 @@
         });
 
         if (!map) {
-          // Инициализируем карту так, чтобы обе точки попали в поле зрения
-          map = L.map('mapContainer');
-          
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19
+          // Инициализация подробной карты
+          map = L.map('mapContainer', {
+            fullscreenControl: true // кнопка разворачивания карты на весь экран
+          });
+
+          // Подключаем детальные векторно-стилизованные тайлы CartoDB Voyager
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 20
           }).addTo(map);
 
-          // 1. Метка СИЗО (красная)
+          L.control.scale({ imperial: false }).addTo(map); // Шкала расстояний в метрах
+
+          // Метка СИЗО
           L.marker([SIZO_LAT, SIZO_LNG], {icon: redIcon}).addTo(map)
             .bindPopup("<b>Здание СИЗО (КПП)</b>").openPopup();
 
-          // 2. Радиус зоны записи вокруг СИЗО
+          // Радиус разрешенной зоны
           L.circle([SIZO_LAT, SIZO_LNG], {
-            color: 'red',
-            fillColor: '#f03',
+            color: '#e74c3c',
+            fillColor: '#e74c3c',
             fillOpacity: 0.15,
             radius: ALLOWED_RADIUS_METERS
           }).addTo(map);
 
-          // 3. Метка пользователя (синяя)
+          // Метка пользователя
           userMarker = L.marker([userLat, userLng]).addTo(map)
             .bindPopup("<b>Вы находитесь здесь</b>");
 
-          // Автоматически подбираем масштаб, чтобы видеть и СИЗО, и пользователя
+          // Выравнивание обзора
           const bounds = L.latLngBounds([
             [SIZO_LAT, SIZO_LNG],
             [userLat, userLng]
           ]);
-          map.fitBounds(bounds, { padding: [30, 30] });
+          map.fitBounds(bounds, { padding: [40, 40] });
 
         } else {
           userMarker.setLatLng([userLat, userLng]);
@@ -531,6 +542,7 @@
     checkDeviceRegistration();
   });
 
+  // Прием заявок строго до 23:59 включительно
   function isWorkingHours() {
     const now = new Date();
     const hours = now.getHours();
@@ -578,7 +590,7 @@
         if (registrationBlock) registrationBlock.style.display = 'none';
         if (alertBox) {
           alertBox.style.display = 'block';
-          alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 24:00.`;
+          alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 23:59.`;
         }
       }
       return;
@@ -604,7 +616,7 @@
   }
 
   function registerUser(windowNum) {
-    if (!isWorkingHours()) { alert("Запись открыта только с 06:00 до 22:00!"); return; }
+    if (!isWorkingHours()) { alert("Запись открыта только с 06:00 до 23:59!"); return; }
     if (!isUserLocationValid) { alert("Запись отклонена: вы находитесь слишком далеко от СИЗО!"); return; }
     if (!currentUser) { alert("Сначала войдите через Google!"); return; }
 
