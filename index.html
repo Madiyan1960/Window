@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Электронная очередь СИЗО — Общая база</title>
+  
+  <!-- Подключение стилей карты Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
   <style>
     * {
       box-sizing: border-box;
@@ -66,18 +70,36 @@
       flex-shrink: 0;
     }
 
-    /* Индикатор геолокации */
+    /* Индикатор геолокации и Карта */
     .geo-status-box {
       font-size: 12px;
       padding: 10px;
       border-radius: 8px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       text-align: center;
       font-weight: bold;
     }
     .geo-pending { background-color: #e2e8f0; color: #475569; }
     .geo-success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
     .geo-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    #mapContainer {
+      width: 100%;
+      height: 220px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #cbd5e1;
+      display: none;
+    }
+    .location-details {
+      font-size: 11px;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 15px;
+      background: #f8fafc;
+      padding: 6px;
+      border-radius: 6px;
+    }
 
     .google-auth-box {
       display: flex;
@@ -199,6 +221,8 @@
     }
   </style>
 
+  <!-- Скрипт карты Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -216,8 +240,12 @@
     <div id="registrationBlock">
       <!-- Статус местоположения -->
       <div id="geoStatus" class="geo-status-box geo-pending">
-        📡 Проверка вашего местоположения...
+        📡 Определение вашей геолокации...
       </div>
+
+      <!-- Карта для отображения пользователя -->
+      <div id="mapContainer"></div>
+      <div id="locationCoords" class="location-details" style="display:none;"></div>
 
       <!-- Блок авторизации Google -->
       <div class="google-auth-box">
@@ -240,7 +268,7 @@
       <div class="consent-group">
         <input type="checkbox" id="consentCheckbox" onchange="toggleButtonsState()">
         <label for="consentCheckbox">
-          Я согласен с <a href="javascript:void(0)" onclick="openPolicyModal()">правилами записи</a> и даю согласие на обработку, а также публикацию моих персональных данных (Имя и Фото профиля) в открытом списке очереди.
+          Я согласен с <a href="javascript:void(0)" onclick="openPolicyModal()">правилами записи</a> и даю согласие на обработку, а также публикацию моих персональных данных в открытом списке очереди.
         </label>
       </div>
 
@@ -298,7 +326,7 @@
   <div class="modal-policy">
     <h3>Правила записи и Согласие</h3>
     <p>Настоящим, оформляя запись в электронную очередь на передачу, Вы даете добровольное согласие на:</p>
-    <p>1. Использование данных Вашего аккаунта (Имя, Электронная почта, Фото профиля) и геолокации для проверки присутствия на территории учреждения.</p>
+    <p>1. Использование данных Вашего аккаунта и геолокации для проверки присутствия на территории учреждения.</p>
     <p>2. Публикацию имени и фото в общедоступном списке очереди СИЗО.</p>
     <div style="text-align:center;">
       <button class="btn-modal btn-close" onclick="closeModal('policyModalOverlay')">Понятно</button>
@@ -319,10 +347,10 @@
 </div>
 
 <script>
-  // НАСТРОЙКИ НАХОЖДЕНИЯ СИЗО И ГЕОФЕНСИНГА
-  const SIZO_LAT = 51.201117; // ВАЖНО: Замените на широту вашего СИЗО
-  const SIZO_LNG = 71.483657; // ВАЖНО: Замените на долготу вашего СИЗО
-  const ALLOWED_RADIUS_METERS = 300; // Допустимый радиус от здания (в метрах)
+  // НАСТРОЙКИ СИЗО
+  const SIZO_LAT = 51.1605; // широта
+  const SIZO_LNG = 71.4704; // долгота
+  const ALLOWED_RADIUS_METERS = 300; // радиус в метрах
 
   const firebaseConfig = { 
     apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI", 
@@ -341,7 +369,9 @@
 
   let queueItems = [];
   let currentUser = null;
-  let isUserLocationValid = false; // Флаг: находится ли человек у здания СИЗО
+  let isUserLocationValid = false;
+  let map = null;
+  let userMarker = null;
 
   function getTodayString() {
     const d = new Date();
@@ -358,7 +388,6 @@
 
   document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;
 
-  // РАСЧЕТ РАССТОЯНИЯ ПО ФОРМУЛЕ ГАВЕРСИНУСА (в метрах)
   function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
     const φ1 = lat1 * Math.PI / 180;
@@ -374,13 +403,15 @@
     return R * c;
   }
 
-  // ПРОВЕРКА ГЕОЛОКАЦИИ ПОЛЬЗОВАТЕЛЯ
+  // ОТОБРАЖЕНИЕ ГЕОЛОКАЦИИ И КАРТЫ
   function verifyUserLocation() {
     const geoStatus = document.getElementById('geoStatus');
+    const mapBox = document.getElementById('mapContainer');
+    const coordsBox = document.getElementById('locationCoords');
 
     if (!navigator.geolocation) {
       geoStatus.className = "geo-status-box geo-error";
-      geoStatus.innerText = "❌ Ваш браузер не поддерживает геопозиционирование.";
+      geoStatus.innerText = "❌ Геопозиционирование не поддерживается.";
       isUserLocationValid = false;
       toggleButtonsState();
       return;
@@ -390,7 +421,26 @@
       (position) => {
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
+        const accuracy = position.coords.accuracy;
         const distance = calculateDistance(userLat, userLng, SIZO_LAT, SIZO_LNG);
+
+        // Инициализация карты
+        mapBox.style.display = 'block';
+        coordsBox.style.display = 'block';
+        coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
+
+        if (!map) {
+          map = L.map('mapContainer').setView([userLat, userLng], 16);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+          }).addTo(map);
+
+          userMarker = L.marker([userLat, userLng]).addTo(map)
+            .bindPopup("Вы находитесь здесь").openPopup();
+        } else {
+          userMarker.setLatLng([userLat, userLng]);
+          map.setView([userLat, userLng], 16);
+        }
 
         if (distance <= ALLOWED_RADIUS_METERS) {
           geoStatus.className = "geo-status-box geo-success";
@@ -398,14 +448,14 @@
           isUserLocationValid = true;
         } else {
           geoStatus.className = "geo-status-box geo-error";
-          geoStatus.innerText = `⛔ Вы находитесь слишком далеко от СИЗО (${Math.round(distance)} м). Запись доступна только в радиусе ${ALLOWED_RADIUS_METERS} м.`;
+          geoStatus.innerText = `⛔ Вы находитесь слишком далеко от СИЗО (${Math.round(distance)} м). Допустимый радиус: ${ALLOWED_RADIUS_METERS} м.`;
           isUserLocationValid = false;
         }
         toggleButtonsState();
       },
       (error) => {
         geoStatus.className = "geo-status-box geo-error";
-        geoStatus.innerText = "⚠️ Пожалуйста, разрешите доступ к геопозиции (GPS) для записи в очередь.";
+        geoStatus.innerText = "⚠️ Пожалуйста, разрешите доступ к геопозиции (GPS), чтобы увидеть себя на карте.";
         isUserLocationValid = false;
         toggleButtonsState();
       },
@@ -413,7 +463,6 @@
     );
   }
 
-  // Запускаем проверку GPS при загрузке
   verifyUserLocation();
 
   auth.onAuthStateChanged((user) => {
@@ -464,7 +513,6 @@
     const isChecked = document.getElementById('consentCheckbox').checked;
     const existing = currentUser ? queueItems.find(item => item.uid === currentUser.uid) : null;
 
-    // Кнопка активна ТОЛЬКО если: время рабочее + пользователь вошел через Google + дал согласие + находится рядом (GPS) + еще не брал талон
     if (isWorkingHours() && currentUser && isChecked && isUserLocationValid && !existing) {
       document.getElementById('btnW2').disabled = false;
       document.getElementById('btnW3').disabled = false;
