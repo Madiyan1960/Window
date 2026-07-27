@@ -676,9 +676,9 @@
 
     auth.signInWithEmailAndPassword(email, password)
       .then(() => {
-        if (confirm('Очистить всю общую очередь на сегодня?')) {
-          return queueRef.remove().then(() => {
-            alert('Очередь успешно очищена!');
+        if (confirm('ВНИМАНИЕ! Полностью удалить всю очередь и ВЕСЬ АРХИВ прошлых дней?')) {
+          return db.ref('queues').remove().then(() => {
+            alert('Вся база и архив очереди полностью очищены!');
             closeModal('adminModalOverlay');
             auth.signOut();
           });
