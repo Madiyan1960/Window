@@ -4,10 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Электронная очередь СИЗО — Общая база</title>
-  
-  <!-- Подключение стилей карты Leaflet и плагина Fullscreen -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-fullscreen@1.0.2/dist/leaflet.fullscreen.css" />
+
+  <!-- Подключение API Яндекс Карт -->
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
 
   <style>
     * {
@@ -83,15 +82,15 @@
     .geo-success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
     .geo-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-    /* Увеличенная детальная карта */
+    /* Блок Яндекс Карты */
     #mapContainer {
       width: 100%;
-      height: 350px;
+      height: 320px;
       border-radius: 12px;
       margin-bottom: 10px;
       border: 2px solid #cbd5e1;
       display: none;
-      z-index: 1;
+      overflow: hidden;
     }
     .location-details {
       font-size: 11px;
@@ -220,13 +219,10 @@
       .btn { width: 100%; padding: 15px; }
       .modal-ticket .number { font-size: 54px; }
       .alert-content { flex-direction: row; }
-      #mapContainer { height: 280px; }
+      #mapContainer { height: 260px; }
     }
   </style>
 
-  <!-- Скрипт карты Leaflet и плагина Fullscreen -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-fullscreen@1.0.2/dist/Leaflet.fullscreen.min.js"></script>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -242,16 +238,16 @@
     <div id="alertBox" class="alert-box"></div>
 
     <div id="registrationBlock">
-      <!-- Статус местоположения -->
+      <!-- Статус геолокации -->
       <div id="geoStatus" class="geo-status-box geo-pending">
         📡 Определение вашей геолокации...
       </div>
 
-      <!-- Детальная карта -->
+      <!-- Карта Яндекс -->
       <div id="mapContainer"></div>
       <div id="locationCoords" class="location-details" style="display:none;"></div>
 
-      <!-- Блок авторизации Google -->
+      <!-- Авторизация Google -->
       <div class="google-auth-box">
         <button id="btnGoogleLogin" class="btn-google" onclick="loginWithGoogle()">
           <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M21.35 11.1H12v3.8h5.4c-.2 1.3-1 2.4-2.2 3.2v2.6h3.6c2.1-1.9 3.3-4.8 3.3-8.5 0-.7-.1-1.3-.2-1.9z"/><path fill="#fff" d="M12 21c2.9 0 5.4-1 7.2-2.7l-3.6-2.6c-1 .7-2.3 1.1-3.6 1.1-2.8 0-5.2-1.9-6-4.5H2.3v2.7C4.1 18.6 7.8 21 12 21z"/><path fill="#fff" d="M6 12.3c-.2-.7-.2-1.5 0-2.3V7.3H2.3C1.5 8.9 1 10.4 1 12s.5 3.1 1.3 4.7l3.7-2.7c-.2-.7-.2-1.4 0-1.7z"/><path fill="#fff" d="M12 5.4c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.4 2.2 14.9 1.3 12 1.3 7.8 1.3 4.1 3.7 2.3 7.3l3.7 2.7c.8-2.6 3.2-4.6 6-4.6z"/></svg>
@@ -351,10 +347,10 @@
 </div>
 
 <script>
-  // НАСТРОЙКИ СИЗО
-  const SIZO_LAT = 51.201117; // широта
-  const SIZO_LNG = 71.483657; // долгота
-  const ALLOWED_RADIUS_METERS = 300; // радиус разрешенной зоны в метрах
+  // КООРДИНАТЫ СИЗО
+  const SIZO_LAT = 51.201117; 
+  const SIZO_LNG = 71.483657; 
+  const ALLOWED_RADIUS_METERS = 300; // Разрешенный радиус в метрах
 
   const firebaseConfig = { 
     apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI", 
@@ -374,8 +370,7 @@
   let queueItems = [];
   let currentUser = null;
   let isUserLocationValid = false;
-  let map = null;
-  let userMarker = null;
+  let ymapsMap = null;
 
   function getTodayString() {
     const d = new Date();
@@ -407,7 +402,7 @@
     return R * c;
   }
 
-  // ВЫСОКОДЕТАЛИЗИРОВАННАЯ КАРТА ВЫСОКОГО РАЗРЕШЕНИЯ
+  // РАБОТА С ЯНДЕКС КАРТАМИ
   function verifyUserLocation() {
     const geoStatus = document.getElementById('geoStatus');
     const mapBox = document.getElementById('mapContainer');
@@ -432,56 +427,53 @@
         coordsBox.style.display = 'block';
         coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
 
-        const redIcon = L.icon({
-          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
+        // Отрисовка Яндекс Карт
+        ymaps.ready(() => {
+          if (!ymapsMap) {
+            ymapsMap = new ymaps.Map("mapContainer", {
+              center: [SIZO_LAT, SIZO_LNG],
+              zoom: 16,
+              controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
+            });
+
+            // 1. Метка СИЗО (красная)
+            const sizoplacemark = new ymaps.Placemark([SIZO_LAT, SIZO_LNG], {
+              hintContent: 'СИЗО КПП',
+              balloonContent: '<b>Здание СИЗО (КПП приёма передач)</b>'
+            }, {
+              preset: 'islands#redDotIcon'
+            });
+
+            // 2. Зона радиуса вокруг СИЗО
+            const sizocircle = new ymaps.Circle([
+              [SIZO_LAT, SIZO_LNG],
+              ALLOWED_RADIUS_METERS
+            ], {}, {
+              fillColor: "#FF000022",
+              strokeColor: "#FF0000",
+              strokeOpacity: 0.8,
+              strokeWidth: 2
+            });
+
+            // 3. Метка пользователя (синяя)
+            const userPlacemark = new ymaps.Placemark([userLat, userLng], {
+              hintContent: 'Вы здесь',
+              balloonContent: '<b>Ваше текущее местоположение</b>'
+            }, {
+              preset: 'islands#blueCircleDotIcon'
+            });
+
+            ymapsMap.geoObjects.add(sizocircle);
+            ymapsMap.geoObjects.add(sizoplacemark);
+            ymapsMap.geoObjects.add(userPlacemark);
+
+            // Центрирование карты
+            ymapsMap.setBounds(ymapsMap.geoObjects.getBounds(), {
+              checkZoomRange: true,
+              zoomMargin: 30
+            });
+          }
         });
-
-        if (!map) {
-          // Инициализация подробной карты
-          map = L.map('mapContainer', {
-            fullscreenControl: true // кнопка разворачивания карты на весь экран
-          });
-
-          // Подключаем детальные векторно-стилизованные тайлы CartoDB Voyager
-          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-            subdomains: 'abcd',
-            maxZoom: 20
-          }).addTo(map);
-
-          L.control.scale({ imperial: false }).addTo(map); // Шкала расстояний в метрах
-
-          // Метка СИЗО
-          L.marker([SIZO_LAT, SIZO_LNG], {icon: redIcon}).addTo(map)
-            .bindPopup("<b>Здание СИЗО (КПП)</b>").openPopup();
-
-          // Радиус разрешенной зоны
-          L.circle([SIZO_LAT, SIZO_LNG], {
-            color: '#e74c3c',
-            fillColor: '#e74c3c',
-            fillOpacity: 0.15,
-            radius: ALLOWED_RADIUS_METERS
-          }).addTo(map);
-
-          // Метка пользователя
-          userMarker = L.marker([userLat, userLng]).addTo(map)
-            .bindPopup("<b>Вы находитесь здесь</b>");
-
-          // Выравнивание обзора
-          const bounds = L.latLngBounds([
-            [SIZO_LAT, SIZO_LNG],
-            [userLat, userLng]
-          ]);
-          map.fitBounds(bounds, { padding: [40, 40] });
-
-        } else {
-          userMarker.setLatLng([userLat, userLng]);
-        }
 
         if (distance <= ALLOWED_RADIUS_METERS) {
           geoStatus.className = "geo-status-box geo-success";
@@ -542,7 +534,7 @@
     checkDeviceRegistration();
   });
 
-  // Прием заявок строго до 23:59 включительно
+  // Запись с 06:00 до 23:59
   function isWorkingHours() {
     const now = new Date();
     const hours = now.getHours();
