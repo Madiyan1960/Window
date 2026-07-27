@@ -672,19 +672,31 @@
     const email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
 
-    if (!email || !password) { alert('Введите email и пароль'); return; }
+    if (!email || !password) { 
+      alert('Введите email и пароль'); 
+      return; 
+    }
 
     auth.signInWithEmailAndPassword(email, password)
       .then(() => {
-        if (confirm('ВНИМАНИЕ! Полностью удалить всю очередь и ВЕСЬ АРХИВ прошлых дней?')) {
-          return db.ref('queues').remove().then(() => {
-            alert('Вся база и архив очереди полностью очищены!');
+        if (confirm('ВНИМАНИЕ! Вы действительно хотите полностью очистить всю очередь и архив всех дней?')) {
+          // Безопасное удаление всех веток очереди
+          return db.ref('queues').once('value').then((snapshot) => {
+            const updates = {};
+            snapshot.forEach((childSnapshot) => {
+              updates[childSnapshot.key] = null;
+            });
+            return db.ref('queues').update(updates);
+          }).then(() => {
+            alert('Вся очередь и архив прошлых дней успешно очищены!');
             closeModal('adminModalOverlay');
             auth.signOut();
           });
         }
       })
-      .catch((error) => { alert('Ошибка авторизации: ' + error.message); });
+      .catch((error) => { 
+        alert('Ошибка авторизации или недостаточно прав: ' + error.message); 
+      });
   }
 
   function showTicket(code) {
