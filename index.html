@@ -534,7 +534,7 @@
   function isWorkingHours() {
     const now = new Date();
     const hours = now.getHours();
-    return hours >= 6 && hours < 22;
+    return hours >= 6 && hours < 24;
   }
 
   setInterval(() => { checkDeviceRegistration(); }, 60000);
