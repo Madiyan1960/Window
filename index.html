@@ -5,8 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Электронная очередь СИЗО — Общая база</title>
 
-  <!-- Подключение API Яндекс Карт -->
-  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+  <!-- Иконка без ошибок 404 -->
+  <link rel="shortcut icon" href="#">
+
+  <!-- PWA Метатеги и Манифест -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Очередь СИЗО">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3596/3596091.png">
+
+  <!-- Скрипт 2GIS MapGL -->
+  <script src="https://mapgl.2gis.com/bl/1.0/webgl.js"></script>
 
   <style>
     * {
@@ -82,10 +93,9 @@
     .geo-success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
     .geo-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-    /* Блок Яндекс Карты */
     #mapContainer {
       width: 100%;
-      height: 320px;
+      height: 300px;
       border-radius: 12px;
       margin-bottom: 10px;
       border: 2px solid #cbd5e1;
@@ -243,7 +253,7 @@
         📡 Определение вашей геолокации...
       </div>
 
-      <!-- Карта Яндекс -->
+      <!-- Карта -->
       <div id="mapContainer"></div>
       <div id="locationCoords" class="location-details" style="display:none;"></div>
 
@@ -288,7 +298,7 @@
           <tr>
             <th>№ Талона</th>
             <th>Фото</th>
-            <th>Имя</th>
+            <th>ФИО / Имя</th>
             <th>Окно</th>
             <th>Время</th>
           </tr>
@@ -341,16 +351,19 @@
     <p style="font-size:12px; color:#666;">Введите логин и пароль для очистки очереди</p>
     <input type="email" id="adminEmail" class="admin-input" placeholder="Email">
     <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль">
-    <button class="btn-modal btn-danger" onclick="submitAdminReset()">Войти и очистить очередь</button>
+    <button class="btn-modal btn-danger" onclick="submitAdminReset()">Войти и очистить всё</button>
     <button class="btn-modal btn-close" style="width:100%; margin-top:8px;" onclick="closeModal('adminModalOverlay')">Отмена</button>
   </div>
 </div>
 
 <script>
+  // КЛЮЧ 2GIS API
+  const MAPS_2GIS_KEY = 'e4776269-8088-46cb-8344-f8b80931818d'; 
+
   // КООРДИНАТЫ СИЗО
-  const SIZO_LAT = 51.201117; 
-  const SIZO_LNG = 71.483657; 
-  const ALLOWED_RADIUS_METERS = 300; // Разрешенный радиус в метрах
+  const SIZO_LAT = 51.1605; 
+  const SIZO_LNG = 71.4704; 
+  const ALLOWED_RADIUS_METERS = 300; 
 
   const firebaseConfig = { 
     apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI", 
@@ -370,7 +383,8 @@
   let queueItems = [];
   let currentUser = null;
   let isUserLocationValid = false;
-  let ymapsMap = null;
+  let map2gis = null;
+  let userMarker2gis = null;
 
   function getTodayString() {
     const d = new Date();
@@ -402,7 +416,7 @@
     return R * c;
   }
 
-  // РАБОТА С ЯНДЕКС КАРТАМИ
+  // БЕЗОПАСНАЯ ПРОВЕРКА ГЕОЛОКАЦИИ И ИНИЦИАЛИЗАЦИЯ КАРТЫ
   function verifyUserLocation() {
     const geoStatus = document.getElementById('geoStatus');
     const mapBox = document.getElementById('mapContainer');
@@ -423,57 +437,36 @@
         const accuracy = position.coords.accuracy;
         const distance = calculateDistance(userLat, userLng, SIZO_LAT, SIZO_LNG);
 
-        mapBox.style.display = 'block';
         coordsBox.style.display = 'block';
         coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
 
-        // Отрисовка Яндекс Карт
-        ymaps.ready(() => {
-          if (!ymapsMap) {
-            ymapsMap = new ymaps.Map("mapContainer", {
-              center: [SIZO_LAT, SIZO_LNG],
-              zoom: 16,
-              controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
-            });
+        // Отрисовка 2GIS с защитой от ошибок сети
+        try {
+          if (window.mapgl) {
+            mapBox.style.display = 'block';
+            if (!map2gis) {
+              map2gis = new mapgl.Map('mapContainer', {
+                center: [userLng, userLat],
+                zoom: 16,
+                key: MAPS_2GIS_KEY,
+              });
 
-            // 1. Метка СИЗО (красная)
-            const sizoplacemark = new ymaps.Placemark([SIZO_LAT, SIZO_LNG], {
-              hintContent: 'СИЗО КПП',
-              balloonContent: '<b>Здание СИЗО (КПП приёма передач)</b>'
-            }, {
-              preset: 'islands#redDotIcon'
-            });
+              new mapgl.Marker(map2gis, {
+                coordinates: [SIZO_LNG, SIZO_LAT],
+                label: { text: 'СИЗО КПП' }
+              });
 
-            // 2. Зона радиуса вокруг СИЗО
-            const sizocircle = new ymaps.Circle([
-              [SIZO_LAT, SIZO_LNG],
-              ALLOWED_RADIUS_METERS
-            ], {}, {
-              fillColor: "#FF000022",
-              strokeColor: "#FF0000",
-              strokeOpacity: 0.8,
-              strokeWidth: 2
-            });
-
-            // 3. Метка пользователя (синяя)
-            const userPlacemark = new ymaps.Placemark([userLat, userLng], {
-              hintContent: 'Вы здесь',
-              balloonContent: '<b>Ваше текущее местоположение</b>'
-            }, {
-              preset: 'islands#blueCircleDotIcon'
-            });
-
-            ymapsMap.geoObjects.add(sizocircle);
-            ymapsMap.geoObjects.add(sizoplacemark);
-            ymapsMap.geoObjects.add(userPlacemark);
-
-            // Центрирование карты
-            ymapsMap.setBounds(ymapsMap.geoObjects.getBounds(), {
-              checkZoomRange: true,
-              zoomMargin: 30
-            });
+              userMarker2gis = new mapgl.Marker(map2gis, {
+                coordinates: [userLng, userLat],
+                label: { text: 'Вы здесь' }
+              });
+            } else if (userMarker2gis) {
+              userMarker2gis.setCoordinates([userLng, userLat]);
+            }
           }
-        });
+        } catch(e) {
+          console.warn("Карта недоступна, проверка расстояния продолжается по GPS");
+        }
 
         if (distance <= ALLOWED_RADIUS_METERS) {
           geoStatus.className = "geo-status-box geo-success";
@@ -488,7 +481,7 @@
       },
       (error) => {
         geoStatus.className = "geo-status-box geo-error";
-        geoStatus.innerText = "⚠️ Пожалуйста, разрешите доступ к геопозиции (GPS), чтобы сверить местоположение с СИЗО.";
+        geoStatus.innerText = "⚠️ Разрешите доступ к геопозиции (GPS), чтобы сверить местоположение с СИЗО.";
         isUserLocationValid = false;
         toggleButtonsState();
       },
@@ -517,9 +510,10 @@
     checkDeviceRegistration();
   });
 
+  // НАДЁЖНЫЙ ВХОД ЧЕРЕЗ REDIRECT ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
   function loginWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(err => { alert("Ошибка входа: " + err.message); });
+    auth.signInWithRedirect(provider);
   }
 
   function logoutGoogle() { auth.signOut(); }
@@ -534,7 +528,7 @@
     checkDeviceRegistration();
   });
 
-  // Запись с 06:00 до 23:59
+  // Время записи: с 06:00 до 23:59 включительно
   function isWorkingHours() {
     const now = new Date();
     const hours = now.getHours();
@@ -668,19 +662,16 @@
   function openPolicyModal() { document.getElementById('policyModalOverlay').style.display = 'flex'; }
   function openAdminModal() { document.getElementById('adminModalOverlay').style.display = 'flex'; }
 
+  // БЕЗОПАСНАЯ ОЧИСТКА ВСЕЙ БАЗЫ И АРХИВА
   function submitAdminReset() {
     const email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
 
-    if (!email || !password) { 
-      alert('Введите email и пароль'); 
-      return; 
-    }
+    if (!email || !password) { alert('Введите email и пароль'); return; }
 
     auth.signInWithEmailAndPassword(email, password)
       .then(() => {
-        if (confirm('ВНИМАНИЕ! Вы действительно хотите полностью очистить всю очередь и архив всех дней?')) {
-          // Безопасное удаление всех веток очереди
+        if (confirm('ВНИМАНИЕ! Вы действительно хотите очистить всю очередь И ВЕСЬ АРХИВ прошлых дней?')) {
           return db.ref('queues').once('value').then((snapshot) => {
             const updates = {};
             snapshot.forEach((childSnapshot) => {
@@ -694,9 +685,7 @@
           });
         }
       })
-      .catch((error) => { 
-        alert('Ошибка авторизации или недостаточно прав: ' + error.message); 
-      });
+      .catch((error) => { alert('Ошибка авторизации: ' + error.message); });
   }
 
   function showTicket(code) {
@@ -720,6 +709,15 @@
   }
 
   function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+  // РЕГИСТРАЦИЯ PWA SERVICE WORKER
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => console.log('PWA Service Worker зарегистрирован:', reg.scope))
+        .catch((err) => console.log('Ошибка регистрации PWA:', err));
+    });
+  }
 </script>
 
 </body>
