@@ -180,6 +180,7 @@
 
     .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
     
+    /* Талон на весь экран */
     .modal-ticket { 
       background: white; 
       padding: 30px 20px; 
@@ -197,6 +198,8 @@
     }
     .modal-ticket h3 { margin: 0 0 10px 0; font-size: 24px; color: #555; letter-spacing: 2px; }
     .modal-ticket .window-title { font-size: 32px; font-weight: 800; color: #1a252f; margin-top: 10px; }
+    
+    /* Крупный номер талона */
     .modal-ticket .number { 
       font-size: 100px; 
       font-weight: 900; 
@@ -429,6 +432,7 @@
   let tapCount = 0;
   let lastTapTime = 0;
 
+  // Отслеживание 4 тапов для показа админки
   document.body.addEventListener('click', (e) => {
     if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy')) {
       return;
@@ -494,7 +498,7 @@
     if (currentMinutes >= purgeMinutes && queueItems.length > 0) {
       queueRef.remove().then(() => {
         console.log(`Очередь автоматически очищена при наступлении ${purgeTime}`);
-        localStorage.removeItem('my_sizo_ticket_' + todayStr);
+        localStorage.removeItem('sizo_ticket_obj_' + todayStr);
       }).catch(err => console.error("Ошибка автоочистки:", err));
     }
   }
@@ -516,7 +520,7 @@
   setInterval(() => {
     const currentDay = getTodayString();
     if (currentDay !== todayStr) {
-      localStorage.removeItem('my_sizo_ticket_' + todayStr);
+      localStorage.removeItem('sizo_ticket_obj_' + todayStr);
       todayStr = currentDay;
       queueRef.off();
       queueItems = [];
@@ -692,10 +696,17 @@
 
   function toggleButtonsState() {
     const isChecked = document.getElementById('consentCheckbox').checked;
-    const savedCode = localStorage.getItem('my_sizo_ticket_' + todayStr);
-    const existing = queueItems.find(item => item.uid === clientId) || (savedCode ? { code: savedCode } : null);
-    const warningBox = document.getElementById('consentWarningBox');
+    
+    // Проверка наличия талона
+    let existing = queueItems.find(item => item.uid === clientId);
+    if (!existing) {
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
+      if (savedTicketJson) {
+        try { existing = JSON.parse(savedTicketJson); } catch(e){}
+      }
+    }
 
+    const warningBox = document.getElementById('consentWarningBox');
     const inTime = isWorkingHours();
     const inGeo = isUserLocationValid;
 
@@ -729,23 +740,29 @@
     }
   }
 
+  // Обновленный метод проверки талона
   function checkDeviceRegistration() {
     const btnW2 = document.getElementById('btnW2');
     const btnW3 = document.getElementById('btnW3');
     const alertBox = document.getElementById('alertBox');
     const registrationBlock = document.getElementById('registrationBlock');
 
-    // Проверяем как в базе, так и в локальной памяти браузера
-    const savedCode = localStorage.getItem('my_sizo_ticket_' + todayStr);
+    // 1. Ищем в базе данных
     let existing = queueItems.find(item => item.uid === clientId);
-    
-    if (!existing && savedCode) {
-      existing = queueItems.find(item => item.code === savedCode) || { code: savedCode, windowNum: savedCode.substring(1,2), time: 'Зафиксировано' };
+
+    // 2. Если в базе еще не найдено, забираем из локальной памяти браузера
+    if (!existing) {
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
+      if (savedTicketJson) {
+        try {
+          existing = JSON.parse(savedTicketJson);
+        } catch(e) {}
+      }
     }
 
     if (existing) {
-      btnW2.disabled = true;
-      btnW3.disabled = true;
+      if (btnW2) btnW2.disabled = true;
+      if (btnW3) btnW3.disabled = true;
       if (registrationBlock) registrationBlock.style.display = 'none';
       if (alertBox) {
         alertBox.style.display = 'block';
@@ -759,8 +776,8 @@
     }
 
     if (!isWorkingHours()) {
-      btnW2.disabled = true;
-      btnW3.disabled = true;
+      if (btnW2) btnW2.disabled = true;
+      if (btnW3) btnW3.disabled = true;
       if (registrationBlock) registrationBlock.style.display = 'none';
       if (alertBox) {
         alertBox.style.display = 'block';
@@ -774,21 +791,13 @@
     toggleButtonsState();
   }
 
+  // Обновленный метод регистрации
   function registerUser(windowNum) {
     if (!isWorkingHours()) { alert(`Запись открыта только с ${workingHours.start} до ${workingHours.end}!`); return; }
     if (!isUserLocationValid) { alert("Запись отклонена: занять очередь возможно только в районе радиуса действия разрешения СИЗО!"); return; }
 
     const consentChecked = document.getElementById('consentCheckbox').checked;
     if (!consentChecked) { alert("Подтвердите согласие с правилами!"); return; }
-
-    const savedCode = localStorage.getItem('my_sizo_ticket_' + todayStr);
-    const existing = queueItems.find(item => item.uid === clientId) || (savedCode ? { code: savedCode } : null);
-    
-    if (existing) {
-      alert(`Вы уже брали талон на сегодня: ${existing.code}`);
-      showTicket(existing.code);
-      return;
-    }
 
     const now = new Date();
     const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
@@ -803,9 +812,10 @@
       timestamp: Date.now()
     };
 
+    // Мгновенное сохранение в браузер
+    localStorage.setItem('sizo_ticket_obj_' + todayStr, JSON.stringify(newItem));
+
     queueRef.push(newItem).then(() => {
-      // Сохраняем талон локально в браузер
-      localStorage.setItem('my_sizo_ticket_' + todayStr, code);
       showTicket(code);
       checkDeviceRegistration();
     }).catch(err => { alert("Ошибка записи: " + err.message); });
@@ -880,7 +890,7 @@
     authenticateAdmin(email, password)
       .then(() => {
         if (confirm('ВНИМАНИЕ! Вы действительно хотите очистить всю очередь И ВЕСЬ АРХИВ прошлых дней?')) {
-          localStorage.removeItem('my_sizo_ticket_' + todayStr);
+          localStorage.removeItem('sizo_ticket_obj_' + todayStr);
           return db.ref('queues').remove().then(() => {
             alert('Вся очередь и архив прошлых дней успешно очищены!');
             closeModal('adminModalOverlay');
@@ -892,7 +902,18 @@
   }
 
   function showTicket(code) {
-    const item = queueItems.find(i => i.code === code) || { code: code, windowNum: code.substring(1,2), time: 'Выдан' };
+    let item = queueItems.find(i => i.code === code);
+    
+    if (!item) {
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
+      if (savedTicketJson) {
+        try { item = JSON.parse(savedTicketJson); } catch(e){}
+      }
+    }
+
+    if (!item) {
+      item = { code: code, windowNum: code.substring(1,2), time: 'Выдан' };
+    }
 
     document.getElementById('mWindow').innerText = `ОКОШКО №${item.windowNum}`;
     document.getElementById('mNumber').innerText = item.code;
