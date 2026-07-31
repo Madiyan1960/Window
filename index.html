@@ -180,7 +180,6 @@
 
     .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
     
-    /* Талон на весь экран */
     .modal-ticket { 
       background: white; 
       padding: 30px 20px; 
@@ -198,8 +197,6 @@
     }
     .modal-ticket h3 { margin: 0 0 10px 0; font-size: 24px; color: #555; letter-spacing: 2px; }
     .modal-ticket .window-title { font-size: 32px; font-weight: 800; color: #1a252f; margin-top: 10px; }
-    
-    /* Крупный номер талона */
     .modal-ticket .number { 
       font-size: 100px; 
       font-weight: 900; 
@@ -328,7 +325,7 @@
   </div>
 </div>
 
-<!-- Модальное окно талона (НА ВЕСЬ ЭКРАН) -->
+<!-- Модальное окно талона -->
 <div id="modalOverlay" class="modal-overlay">
   <div class="modal-ticket">
     <h3>ТАЛОН ОЧЕРЕДИ</h3>
@@ -401,14 +398,7 @@
   const SIZO_LNG = 71.483657; 
   
   let ALLOWED_RADIUS_METERS = 300; 
-
-  // Базовые настройки по умолчанию (до подгрузки из БД)
-  let workingHours = {
-    start: "00:01",
-    end: "23:59"
-  };
-
-  // Важно: null по умолчанию, чтобы автоочистка не срабатывала до получения данных из админки
+  let workingHours = { start: "00:01", end: "23:59" };
   let purgeTime = null; 
 
   const firebaseConfig = { 
@@ -431,10 +421,12 @@
   let ymapsMap = null;
   let sizocircle = null;
 
+  // НОВЫЙ ФЛАГ для защиты от фантомных талонов
+  let isQueueLoaded = false;
+
   let tapCount = 0;
   let lastTapTime = 0;
 
-  // Отслеживание 4 тапов для показа админки
   document.body.addEventListener('click', (e) => {
     if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy')) {
       return;
@@ -492,7 +484,7 @@
   updateTableHeaderTitle();
 
   function checkAutoPurgeTime() {
-    if (!purgeTime) return; // Если время в БД ещё не настроено — очистку не выполняем
+    if (!purgeTime) return;
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const purgeMinutes = timeToMinutes(purgeTime);
@@ -507,11 +499,20 @@
 
   function attachQueueListener() {
     queueRef.on('value', (snapshot) => {
+      isQueueLoaded = true; // СИГНАЛ: база Firebase загрузилась!
       const data = snapshot.val();
       queueItems = [];
       if (data) {
         Object.keys(data).forEach(key => { queueItems.push(data[key]); });
       }
+      
+      // ИСПРАВЛЕНИЕ "ФАНТОМНОГО ТАЛОНА":
+      // Если база загружена, но нашего талона там больше нет — стираем его из браузера
+      const stillExists = queueItems.find(item => item.uid === clientId);
+      if (!stillExists) {
+        localStorage.removeItem('sizo_ticket_obj_' + todayStr);
+      }
+
       renderTable();
       checkDeviceRegistration();
       checkAutoPurgeTime();
@@ -524,6 +525,7 @@
     if (currentDay !== todayStr) {
       localStorage.removeItem('sizo_ticket_obj_' + todayStr);
       todayStr = currentDay;
+      isQueueLoaded = false; // Сбрасываем флаг при смене дня
       queueRef.off();
       queueItems = [];
       renderTable();
@@ -699,9 +701,9 @@
   function toggleButtonsState() {
     const isChecked = document.getElementById('consentCheckbox').checked;
     
-    // Проверка наличия талона
     let existing = queueItems.find(item => item.uid === clientId);
-    if (!existing) {
+    // Берем талон из локальной памяти ТОЛЬКО если база Firebase еще не ответила
+    if (!existing && !isQueueLoaded) {
       const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
       if (savedTicketJson) {
         try { existing = JSON.parse(savedTicketJson); } catch(e){}
@@ -748,11 +750,10 @@
     const alertBox = document.getElementById('alertBox');
     const registrationBlock = document.getElementById('registrationBlock');
 
-    // 1. Ищем в базе данных
     let existing = queueItems.find(item => item.uid === clientId);
 
-    // 2. Забираем из локальной памяти устройства
-    if (!existing) {
+    // Берем талон из браузера ТОЛЬКО если база еще не загрузилась (спасет от моргания интерфейса)
+    if (!existing && !isQueueLoaded) {
       const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
       if (savedTicketJson) {
         try {
@@ -812,7 +813,6 @@
       timestamp: Date.now()
     };
 
-    // Сохранение в браузер
     localStorage.setItem('sizo_ticket_obj_' + todayStr, JSON.stringify(newItem));
 
     queueRef.push(newItem).then(() => {
@@ -904,7 +904,7 @@
   function showTicket(code) {
     let item = queueItems.find(i => i.code === code);
     
-    if (!item) {
+    if (!item && !isQueueLoaded) {
       const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
       if (savedTicketJson) {
         try { item = JSON.parse(savedTicketJson); } catch(e){}
