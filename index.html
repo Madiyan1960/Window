@@ -180,7 +180,6 @@
 
     .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
     
-    /* Талон на весь экран */
     .modal-ticket { 
       background: white; 
       padding: 30px 20px; 
@@ -198,8 +197,6 @@
     }
     .modal-ticket h3 { margin: 0 0 10px 0; font-size: 24px; color: #555; letter-spacing: 2px; }
     .modal-ticket .window-title { font-size: 32px; font-weight: 800; color: #1a252f; margin-top: 10px; }
-    
-    /* Максимально крупный номер талона */
     .modal-ticket .number { 
       font-size: 100px; 
       font-weight: 900; 
@@ -274,7 +271,6 @@
     <h2>Запись в очередь СИЗО</h2>
     <div class="subtitle">Общая электронная система передач</div>
 
-    <!-- Информационное уведомление про радиус -->
     <div class="geo-notice-info">
       📍 <strong>Важно:</strong> Запись возможна строго в радиусе разрешения возле СИЗО.
     </div>
@@ -282,16 +278,13 @@
     <div id="alertBox" class="alert-box"></div>
 
     <div id="registrationBlock">
-      <!-- Статус геолокации -->
       <div id="geoStatus" class="geo-status-box geo-pending">
         📡 Определение геолокации...
       </div>
 
-      <!-- Карта Яндекс -->
       <div id="mapContainer"></div>
       <div id="locationCoords" class="location-details" style="display:none;"></div>
 
-      <!-- Чекбокс согласия -->
       <div class="consent-group">
         <input type="checkbox" id="consentCheckbox" onchange="toggleButtonsState()">
         <label for="consentCheckbox">
@@ -299,7 +292,6 @@
         </label>
       </div>
 
-      <!-- Информационный блок с предупреждением при нажатии на чекбокс -->
       <div id="consentWarningBox" class="consent-warning-box"></div>
 
       <div class="btn-group">
@@ -327,7 +319,6 @@
       </table>
     </div>
 
-    <!-- Блок панели администратора -->
     <div id="adminPanelBlock" class="admin-panel">
       <button class="btn-admin-reset" onclick="openAdminModal()">⚙️ Управление записью (Админ)</button>
     </div>
@@ -370,7 +361,6 @@
     <input type="email" id="adminEmail" class="admin-input" placeholder="Email администратора">
     <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль администратора">
 
-    <!-- Настройка времени работы -->
     <div class="time-settings-group">
       <label>🕒 Время работы электронной очереди:</label>
       <div class="time-inputs-flex">
@@ -381,7 +371,6 @@
       </div>
     </div>
 
-    <!-- Настройка времени авто-удаления списка -->
     <div class="time-settings-group">
       <label>🗑️ Время автоматической очистки очереди за сегодня:</label>
       <div class="time-inputs-flex">
@@ -390,7 +379,6 @@
       </div>
     </div>
 
-    <!-- Настройка радиуса разрешения -->
     <div class="time-settings-group">
       <label>📏 Радиус действия разрешения (в метрах):</label>
       <div class="time-inputs-flex">
@@ -406,7 +394,6 @@
 </div>
 
 <script>
-  // КООРДИНАТЫ СИЗО
   const SIZO_LAT = 51.201117; 
   const SIZO_LNG = 71.483657; 
   
@@ -439,7 +426,6 @@
   let ymapsMap = null;
   let sizocircle = null;
 
-  // ЛОГИКА 4-КРАТНОГО ТАПА ДЛЯ ОТОБРАЖЕНИЯ АДМИН-ПАНЕЛИ
   let tapCount = 0;
   let lastTapTime = 0;
 
@@ -508,6 +494,7 @@
     if (currentMinutes >= purgeMinutes && queueItems.length > 0) {
       queueRef.remove().then(() => {
         console.log(`Очередь автоматически очищена при наступлении ${purgeTime}`);
+        localStorage.removeItem('my_sizo_ticket_' + todayStr);
       }).catch(err => console.error("Ошибка автоочистки:", err));
     }
   }
@@ -529,6 +516,7 @@
   setInterval(() => {
     const currentDay = getTodayString();
     if (currentDay !== todayStr) {
+      localStorage.removeItem('my_sizo_ticket_' + todayStr);
       todayStr = currentDay;
       queueRef.off();
       queueItems = [];
@@ -704,7 +692,8 @@
 
   function toggleButtonsState() {
     const isChecked = document.getElementById('consentCheckbox').checked;
-    const existing = queueItems.find(item => item.uid === clientId);
+    const savedCode = localStorage.getItem('my_sizo_ticket_' + todayStr);
+    const existing = queueItems.find(item => item.uid === clientId) || (savedCode ? { code: savedCode } : null);
     const warningBox = document.getElementById('consentWarningBox');
 
     const inTime = isWorkingHours();
@@ -746,30 +735,12 @@
     const alertBox = document.getElementById('alertBox');
     const registrationBlock = document.getElementById('registrationBlock');
 
-    const existing = queueItems.find(item => item.uid === clientId);
-
-    if (!isWorkingHours()) {
-      btnW2.disabled = true;
-      btnW3.disabled = true;
-
-      if (existing) {
-        if (registrationBlock) registrationBlock.style.display = 'none';
-        if (alertBox) {
-          alertBox.style.display = 'block';
-          alertBox.innerHTML = `
-            <div class="alert-content">
-              <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Мой талон</button>
-              <div>⚠️ Вы зарегистрированы под номером <strong>${existing.code}</strong>. Прием новых заявок завершен.</div>
-            </div>`;
-        }
-      } else {
-        if (registrationBlock) registrationBlock.style.display = 'none';
-        if (alertBox) {
-          alertBox.style.display = 'block';
-          alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает с ${workingHours.start} до ${workingHours.end}.`;
-        }
-      }
-      return;
+    // Проверяем как в базе, так и в локальной памяти браузера
+    const savedCode = localStorage.getItem('my_sizo_ticket_' + todayStr);
+    let existing = queueItems.find(item => item.uid === clientId);
+    
+    if (!existing && savedCode) {
+      existing = queueItems.find(item => item.code === savedCode) || { code: savedCode, windowNum: savedCode.substring(1,2), time: 'Зафиксировано' };
     }
 
     if (existing) {
@@ -781,14 +752,26 @@
         alertBox.innerHTML = `
           <div class="alert-content">
             <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Мой талон</button>
-            <div>⚠️ Вы уже записаны под номером <strong>${existing.code}</strong>. Повторная запись с одного устройства заблокирована.</div>
+            <div>⚠️ Вы зарегистрированы под номером <strong>${existing.code}</strong>. Повторная запись заблокирована.</div>
           </div>`;
       }
-    } else {
-      if (registrationBlock) registrationBlock.style.display = 'block';
-      if (alertBox) alertBox.style.display = 'none';
-      toggleButtonsState();
+      return;
     }
+
+    if (!isWorkingHours()) {
+      btnW2.disabled = true;
+      btnW3.disabled = true;
+      if (registrationBlock) registrationBlock.style.display = 'none';
+      if (alertBox) {
+        alertBox.style.display = 'block';
+        alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает с ${workingHours.start} до ${workingHours.end}.`;
+      }
+      return;
+    }
+
+    if (registrationBlock) registrationBlock.style.display = 'block';
+    if (alertBox) alertBox.style.display = 'none';
+    toggleButtonsState();
   }
 
   function registerUser(windowNum) {
@@ -798,7 +781,9 @@
     const consentChecked = document.getElementById('consentCheckbox').checked;
     if (!consentChecked) { alert("Подтвердите согласие с правилами!"); return; }
 
-    const existing = queueItems.find(item => item.uid === clientId);
+    const savedCode = localStorage.getItem('my_sizo_ticket_' + todayStr);
+    const existing = queueItems.find(item => item.uid === clientId) || (savedCode ? { code: savedCode } : null);
+    
     if (existing) {
       alert(`Вы уже брали талон на сегодня: ${existing.code}`);
       showTicket(existing.code);
@@ -819,7 +804,10 @@
     };
 
     queueRef.push(newItem).then(() => {
+      // Сохраняем талон локально в браузер
+      localStorage.setItem('my_sizo_ticket_' + todayStr, code);
       showTicket(code);
+      checkDeviceRegistration();
     }).catch(err => { alert("Ошибка записи: " + err.message); });
   }
 
@@ -892,6 +880,7 @@
     authenticateAdmin(email, password)
       .then(() => {
         if (confirm('ВНИМАНИЕ! Вы действительно хотите очистить всю очередь И ВЕСЬ АРХИВ прошлых дней?')) {
+          localStorage.removeItem('my_sizo_ticket_' + todayStr);
           return db.ref('queues').remove().then(() => {
             alert('Вся очередь и архив прошлых дней успешно очищены!');
             closeModal('adminModalOverlay');
@@ -903,8 +892,7 @@
   }
 
   function showTicket(code) {
-    const item = queueItems.find(i => i.code === code);
-    if (!item) return;
+    const item = queueItems.find(i => i.code === code) || { code: code, windowNum: code.substring(1,2), time: 'Выдан' };
 
     document.getElementById('mWindow').innerText = `ОКОШКО №${item.windowNum}`;
     document.getElementById('mNumber').innerText = item.code;
