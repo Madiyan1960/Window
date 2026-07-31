@@ -9,15 +9,15 @@
   <link rel="shortcut icon" href="#">
 
   <!-- PWA Метатеги и Манифест -->
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#1a252f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Очередь СИЗО">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3596/3596091.png">
 
-  <!-- Скрипт 2GIS MapGL -->
-  <script src="https://mapgl.2gis.com/bl/1.0/webgl.js"></script>
+  <!-- API Яндекс.Карт v2.1 -->
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
 
   <style>
     * {
@@ -28,7 +28,7 @@
     body {
       background-color: #f4f6f9;
       margin: 0;
-      padding: 12px;
+      padding: 6px;
       display: flex;
       justify-content: center;
     }
@@ -37,55 +37,67 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 8px;
     }
     .card {
       background: white;
-      padding: 18px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 10px 12px;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
-    h2, h3 { margin-top: 0; color: #1a252f; text-align: center; }
-    h2 { font-size: 20px; }
-    h3 { font-size: 17px; }
-    .subtitle { color: #666; font-size: 13px; text-align: center; margin-bottom: 15px; }
+    h2 { font-size: 16px; margin: 0 0 2px 0; color: #1a252f; text-align: center; }
+    h3 { font-size: 14px; margin: 0 0 6px 0; color: #1a252f; text-align: center; }
+    .subtitle { color: #666; font-size: 11px; text-align: center; margin-bottom: 6px; }
+
+    .geo-notice-info {
+      background-color: #ebf8ff;
+      border: 1px solid #bee3f8;
+      color: #2b6cb0;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      text-align: center;
+      margin-bottom: 8px;
+      line-height: 1.3;
+      font-weight: 500;
+    }
 
     .alert-box {
       display: none;
-      padding: 12px;
+      padding: 8px 10px;
       background-color: #fff3cd;
       color: #856404;
       border: 1px solid #ffeeba;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      font-size: 13px;
-      line-height: 1.4;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      line-height: 1.3;
     }
 
     .alert-content {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
     }
 
     .btn-alert-ticket {
       background-color: #34495e;
       color: white;
       border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
+      padding: 6px 10px;
+      border-radius: 4px;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
       white-space: nowrap;
       flex-shrink: 0;
     }
 
     .geo-status-box {
-      font-size: 12px;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      font-size: 11px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
       text-align: center;
       font-weight: bold;
     }
@@ -95,96 +107,56 @@
 
     #mapContainer {
       width: 100%;
-      height: 300px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      border: 2px solid #cbd5e1;
+      height: 180px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      border: 1px solid #cbd5e1;
       display: none;
       overflow: hidden;
     }
     .location-details {
-      font-size: 11px;
+      font-size: 10px;
       color: #64748b;
       text-align: center;
-      margin-bottom: 15px;
+      margin-bottom: 8px;
       background: #f8fafc;
-      padding: 6px;
-      border-radius: 6px;
-    }
-
-    .google-auth-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 15px;
-      padding: 15px;
-      background: #f8fafc;
-      border-radius: 10px;
-      border: 1px solid #e2e8f0;
-    }
-    .btn-google {
-      background-color: #4285f4;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-    }
-
-    .user-profile-info {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      width: 100%;
-    }
-    .user-profile-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #4285f4;
-    }
-    .user-profile-details { flex: 1; }
-    .user-profile-name { font-weight: bold; font-size: 15px; color: #1a252f; }
-    .user-profile-email { font-size: 12px; color: #64748b; }
-    .btn-logout {
-      background: transparent;
-      border: 1px solid #cbd5e1;
-      color: #64748b;
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
     }
 
     .consent-group {
       display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 15px;
-      font-size: 12px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 11px;
       color: #4a5568;
-      line-height: 1.4;
+      line-height: 1.3;
       background: #f8fafc;
-      padding: 10px 12px;
-      border-radius: 8px;
+      padding: 6px 8px;
+      border-radius: 6px;
       border: 1px solid #e2e8f0;
     }
-    .consent-group input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; flex-shrink: 0; }
+    .consent-group input[type="checkbox"] { width: 16px; height: 18px; margin: 0; cursor: pointer; flex-shrink: 0; }
     .consent-group label { cursor: pointer; user-select: none; }
     .consent-group a { color: #2980b9; text-decoration: underline; }
 
-    .btn-group { display: flex; gap: 10px; }
+    .consent-warning-box {
+      display: none;
+      background-color: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .btn-group { display: flex; gap: 8px; }
     .btn {
-      flex: 1; padding: 16px 10px; font-size: 15px; font-weight: bold;
-      border: none; border-radius: 8px; cursor: pointer; color: white;
+      flex: 1; padding: 10px 6px; font-size: 13px; font-weight: bold;
+      border: none; border-radius: 6px; cursor: pointer; color: white;
       transition: background 0.2s, transform 0.1s, opacity 0.2s; touch-action: manipulation;
     }
     .btn:active { transform: scale(0.98); }
@@ -192,44 +164,101 @@
     .btn-w3 { background-color: #2980b9; }
     .btn:disabled { background-color: #cbd5e1; color: #94a3b8; cursor: not-allowed; transform: none; }
 
-    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
-    th, td { padding: 10px 8px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
+    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+    th, td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
     th { background-color: #f8f9fa; color: #4a5568; }
 
-    .table-user-photo { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1.5px solid #cbd5e1; display: block; }
+    .admin-panel { 
+      margin-top: 8px; 
+      padding-top: 6px; 
+      border-top: 1px dashed #cbd5e1; 
+      display: none; 
+      justify-content: flex-end; 
+    }
+    .btn-admin-reset { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
 
-    .admin-panel { margin-top: 15px; padding-top: 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: flex-end; }
-    .btn-admin-reset { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; }
+    .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
+    
+    /* Талон на весь экран */
+    .modal-ticket { 
+      background: white; 
+      padding: 30px 20px; 
+      border-radius: 0; 
+      width: 100vw; 
+      height: 100vh; 
+      max-width: 100%; 
+      text-align: center; 
+      box-shadow: none; 
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border: 8px dashed #1a252f;
+    }
+    .modal-ticket h3 { margin: 0 0 10px 0; font-size: 24px; color: #555; letter-spacing: 2px; }
+    .modal-ticket .window-title { font-size: 32px; font-weight: 800; color: #1a252f; margin-top: 10px; }
+    
+    /* Максимально крупный номер талона */
+    .modal-ticket .number { 
+      font-size: 100px; 
+      font-weight: 900; 
+      margin: 20px 0; 
+      color: #000; 
+      line-height: 1; 
+      letter-spacing: 2px;
+    }
+    .modal-ticket .time-stamp { font-size: 18px; color: #666; margin-top: 15px; font-weight: bold; }
 
-    .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.75); justify-content: center; align-items: center; z-index: 1000; padding: 12px; }
-    .modal-ticket, .modal-admin, .modal-policy { background: white; padding: 25px 20px; border-radius: 16px; max-width: 480px; width: 100%; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
-    .modal-ticket { border: 4px dashed #1a252f; }
-    .modal-ticket h3 { margin: 0 0 10px 0; font-size: 20px; color: #555; }
-    .modal-ticket .ticket-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; border: 3px solid #34495e; }
-    .modal-ticket .user-name { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
-    .modal-ticket .window-title { font-size: 24px; font-weight: 800; color: #1a252f; }
-    .modal-ticket .number { font-size: 64px; font-weight: 900; margin: 10px 0; color: #000; line-height: 1; }
-    .modal-ticket .time-stamp { font-size: 14px; color: #666; margin-top: 10px; }
-
+    .modal-admin, .modal-policy { background: white; padding: 15px 12px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .modal-policy { text-align: left; max-height: 80vh; overflow-y: auto; }
     .modal-policy h3 { text-align: center; margin-top: 0; }
-    .modal-policy p { font-size: 13px; color: #4a5568; line-height: 1.5; }
+    .modal-policy p { font-size: 11px; color: #4a5568; line-height: 1.4; }
 
-    .admin-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-    .btn-modal { margin-top: 15px; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; font-size: 15px; }
+    .admin-input { width: 100%; padding: 6px 8px; margin-bottom: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+    .time-settings-group {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+    .time-settings-group label {
+      font-size: 11px;
+      font-weight: bold;
+      color: #334155;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .time-inputs-flex {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 12px;
+    }
+    .time-inputs-flex input[type="time"], .time-inputs-flex input[type="number"] {
+      flex: 1;
+      padding: 4px 6px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .btn-modal { margin-top: 15px; padding: 14px 28px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; font-size: 16px; }
     .btn-close { background: #7f8c8d; }
     .btn-print { background: #27ae60; margin-left: 10px; }
+    .btn-primary { background: #3498db; width: 100%; }
     .btn-danger { background: #e74c3c; width: 100%; }
 
     @media (max-width: 600px) {
-      body { padding: 8px; }
-      .card { padding: 15px; }
-      .btn-group { flex-direction: column; }
-      .btn { width: 100%; padding: 15px; }
-      .modal-ticket .number { font-size: 54px; }
-      .alert-content { flex-direction: row; }
-      #mapContainer { height: 260px; }
+      body { padding: 4px; }
+      .card { padding: 10px; }
+      .btn-group { flex-direction: column; gap: 6px; }
+      .btn { width: 100%; padding: 12px 6px; }
+      .modal-ticket .number { font-size: 80px; }
+      .modal-ticket .window-title { font-size: 26px; }
+      #mapContainer { height: 160px; }
     }
   </style>
 
@@ -245,42 +274,33 @@
     <h2>Запись в очередь СИЗО</h2>
     <div class="subtitle">Общая электронная система передач</div>
 
+    <!-- Информационное уведомление про радиус -->
+    <div class="geo-notice-info">
+      📍 <strong>Важно:</strong> Запись возможна строго в радиусе разрешения возле СИЗО.
+    </div>
+
     <div id="alertBox" class="alert-box"></div>
 
     <div id="registrationBlock">
       <!-- Статус геолокации -->
       <div id="geoStatus" class="geo-status-box geo-pending">
-        📡 Определение вашей геолокации...
+        📡 Определение геолокации...
       </div>
 
-      <!-- Карта -->
+      <!-- Карта Яндекс -->
       <div id="mapContainer"></div>
       <div id="locationCoords" class="location-details" style="display:none;"></div>
-
-      <!-- Авторизация Google -->
-      <div class="google-auth-box">
-        <button id="btnGoogleLogin" class="btn-google" onclick="loginWithGoogle()">
-          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M21.35 11.1H12v3.8h5.4c-.2 1.3-1 2.4-2.2 3.2v2.6h3.6c2.1-1.9 3.3-4.8 3.3-8.5 0-.7-.1-1.3-.2-1.9z"/><path fill="#fff" d="M12 21c2.9 0 5.4-1 7.2-2.7l-3.6-2.6c-1 .7-2.3 1.1-3.6 1.1-2.8 0-5.2-1.9-6-4.5H2.3v2.7C4.1 18.6 7.8 21 12 21z"/><path fill="#fff" d="M6 12.3c-.2-.7-.2-1.5 0-2.3V7.3H2.3C1.5 8.9 1 10.4 1 12s.5 3.1 1.3 4.7l3.7-2.7c-.2-.7-.2-1.4 0-1.7z"/><path fill="#fff" d="M12 5.4c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.4 2.2 14.9 1.3 12 1.3 7.8 1.3 4.1 3.7 2.3 7.3l3.7 2.7c.8-2.6 3.2-4.6 6-4.6z"/></svg>
-          Войти через Google для записи
-        </button>
-
-        <div id="userProfileInfo" class="user-profile-info">
-          <img id="userAvatar" class="user-profile-avatar" src="" alt="Аватар">
-          <div class="user-profile-details">
-            <div id="userNameDisplay" class="user-profile-name"></div>
-            <div id="userEmailDisplay" class="user-profile-email"></div>
-          </div>
-          <button class="btn-logout" onclick="logoutGoogle()">Выйти</button>
-        </div>
-      </div>
 
       <!-- Чекбокс согласия -->
       <div class="consent-group">
         <input type="checkbox" id="consentCheckbox" onchange="toggleButtonsState()">
         <label for="consentCheckbox">
-          Я согласен с <a href="javascript:void(0)" onclick="openPolicyModal()">правилами записи</a> и даю согласие на обработку, а также публикацию моих персональных данных в открытом списке очереди.
+          Я согласен с <a href="javascript:void(0)" onclick="openPolicyModal()">правилами записи</a> и получением талона.
         </label>
       </div>
+
+      <!-- Информационный блок с предупреждением при нажатии на чекбокс -->
+      <div id="consentWarningBox" class="consent-warning-box"></div>
 
       <div class="btn-group">
         <button id="btnW2" class="btn btn-w2" onclick="registerUser(2)" disabled>Встать в очередь (Окошко №2)</button>
@@ -297,34 +317,31 @@
         <thead>
           <tr>
             <th>№ Талона</th>
-            <th>Фото</th>
-            <th>Имя</th>
-            <th>Окно</th>
-            <th>Время</th>
+            <th>Окно приема</th>
+            <th>Время выдачи</th>
           </tr>
         </thead>
         <tbody id="queueTableBody">
-          <tr><td colspan="5" style="text-align:center; color:#888;">Загрузка общей базы...</td></tr>
+          <tr><td colspan="3" style="text-align:center; color:#888;">Загрузка общей базы...</td></tr>
         </tbody>
       </table>
     </div>
 
-    <div class="admin-panel">
-      <button class="btn-admin-reset" onclick="openAdminModal()">⚙️ Вход для очистки (Админ)</button>
+    <!-- Блок панели администратора -->
+    <div id="adminPanelBlock" class="admin-panel">
+      <button class="btn-admin-reset" onclick="openAdminModal()">⚙️ Управление записью (Админ)</button>
     </div>
   </div>
 </div>
 
-<!-- Модальное окно талона -->
+<!-- Модальное окно талона (НА ВЕСЬ ЭКРАН) -->
 <div id="modalOverlay" class="modal-overlay">
   <div class="modal-ticket">
     <h3>ТАЛОН ОЧЕРЕДИ</h3>
-    <img id="mPhoto" class="ticket-img" style="display:none;" alt="Фото">
-    <div id="mName" class="user-name"></div>
     <div id="mWindow" class="window-title"></div>
     <div id="mNumber" class="number"></div>
     <div id="mTime" class="time-stamp"></div>
-    <div>
+    <div style="margin-top: 25px;">
       <button class="btn-modal btn-close" onclick="closeModal('modalOverlay')">Закрыть</button>
       <button class="btn-modal btn-print" onclick="window.print()">Печать</button>
     </div>
@@ -335,9 +352,9 @@
 <div id="policyModalOverlay" class="modal-overlay">
   <div class="modal-policy">
     <h3>Правила записи и Согласие</h3>
-    <p>Настоящим, оформляя запись в электронную очередь на передачу, Вы даете добровольное согласие на:</p>
-    <p>1. Использование данных Вашего аккаунта и геолокации для проверки присутствия на территории учреждения.</p>
-    <p>2. Публикацию имени и фото в общедоступном списке очереди СИЗО.</p>
+    <p>Настоящим, оформляя запись в электронную очередь на передачу, Вы даете согласие на:</p>
+    <p>1. Использование геопозиции вашего устройства для проверки присутствия возле здания СИЗО.</p>
+    <p>2. Отображение вашего порядкового номера талона в общем списке очереди.</p>
     <div style="text-align:center;">
       <button class="btn-modal btn-close" onclick="closeModal('policyModalOverlay')">Понятно</button>
     </div>
@@ -347,23 +364,60 @@
 <!-- Модальное окно Админа -->
 <div id="adminModalOverlay" class="modal-overlay">
   <div class="modal-admin">
-    <h3>АВТОРИЗАЦИЯ АДМИНИСТРАТОРА</h3>
-    <p style="font-size:12px; color:#666;">Введите логин и пароль для очистки очереди</p>
-    <input type="email" id="adminEmail" class="admin-input" placeholder="Email">
-    <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль">
-    <button class="btn-modal btn-danger" onclick="submitAdminReset()">Войти и очистить всё</button>
-    <button class="btn-modal btn-close" style="width:100%; margin-top:8px;" onclick="closeModal('adminModalOverlay')">Отмена</button>
+    <h3>ПАНЕЛЬ АДМИНИСТРАТОРА</h3>
+    <p style="font-size:11px; color:#666; margin-bottom:8px;">Авторизуйтесь для управления очередью и графиком</p>
+
+    <input type="email" id="adminEmail" class="admin-input" placeholder="Email администратора">
+    <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль администратора">
+
+    <!-- Настройка времени работы -->
+    <div class="time-settings-group">
+      <label>🕒 Время работы электронной очереди:</label>
+      <div class="time-inputs-flex">
+        <span>С:</span>
+        <input type="time" id="startTimeInput" value="00:01">
+        <span>До:</span>
+        <input type="time" id="endTimeInput" value="16:30">
+      </div>
+    </div>
+
+    <!-- Настройка времени авто-удаления списка -->
+    <div class="time-settings-group">
+      <label>🗑️ Время автоматической очистки очереди за сегодня:</label>
+      <div class="time-inputs-flex">
+        <span>Время очистки:</span>
+        <input type="time" id="purgeTimeInput" value="18:00">
+      </div>
+    </div>
+
+    <!-- Настройка радиуса разрешения -->
+    <div class="time-settings-group">
+      <label>📏 Радиус действия разрешения (в метрах):</label>
+      <div class="time-inputs-flex">
+        <input type="number" id="radiusInput" value="300" min="10" max="50000" step="10">
+        <span>метров</span>
+      </div>
+    </div>
+
+    <button class="btn-modal btn-primary" onclick="submitSaveSettings()">💾 Сохранить настройки</button>
+    <button class="btn-modal btn-danger" onclick="submitAdminReset()">🗑️ Очистить всю очередь и архив</button>
+    <button class="btn-modal btn-close" style="width:100%; margin-top:6px;" onclick="closeModal('adminModalOverlay')">Закрыть</button>
   </div>
 </div>
 
 <script>
-  // КЛЮЧ 2GIS API
-  const MAPS_2GIS_KEY = 'e4776269-8088-46cb-8344-f8b80931818d'; 
-
   // КООРДИНАТЫ СИЗО
   const SIZO_LAT = 51.201117; 
   const SIZO_LNG = 71.483657; 
-  const ALLOWED_RADIUS_METERS = 300; 
+  
+  let ALLOWED_RADIUS_METERS = 300; 
+
+  let workingHours = {
+    start: "00:01",
+    end: "16:30"
+  };
+
+  let purgeTime = "18:00";
 
   const firebaseConfig = { 
     apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI", 
@@ -381,10 +435,48 @@
   const auth = firebase.auth();
 
   let queueItems = [];
-  let currentUser = null;
   let isUserLocationValid = false;
-  let map2gis = null;
-  let userMarker2gis = null;
+  let ymapsMap = null;
+  let sizocircle = null;
+
+  // ЛОГИКА 4-КРАТНОГО ТАПА ДЛЯ ОТОБРАЖЕНИЯ АДМИН-ПАНЕЛИ
+  let tapCount = 0;
+  let lastTapTime = 0;
+
+  document.body.addEventListener('click', (e) => {
+    if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy')) {
+      return;
+    }
+
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapTime;
+
+    if (tapLength < 500 && tapLength > 0) {
+      tapCount++;
+    } else {
+      tapCount = 1;
+    }
+    lastTapTime = currentTime;
+
+    if (tapCount === 4) {
+      const adminBlock = document.getElementById('adminPanelBlock');
+      if (adminBlock) {
+        adminBlock.style.display = 'flex';
+        adminBlock.scrollIntoView({ behavior: 'smooth' });
+      }
+      tapCount = 0;
+    }
+  });
+
+  function getDeviceId() {
+    let devId = localStorage.getItem('sizo_device_id');
+    if (!devId) {
+      devId = 'dev_' + Math.random().toString(36).substr(2, 9) + Date.now();
+      localStorage.setItem('sizo_device_id', devId);
+    }
+    return devId;
+  }
+  const clientId = getDeviceId();
 
   function getTodayString() {
     const d = new Date();
@@ -396,10 +488,92 @@
     return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
   }
 
-  const todayStr = getTodayString();
-  const queueRef = db.ref('queues/' + todayStr);
+  let todayStr = getTodayString();
+  let queueRef = db.ref('queues/' + todayStr);
+  const settingsTimeRef = db.ref('settings/workingHours');
+  const settingsRadiusRef = db.ref('settings/radius');
+  const settingsPurgeRef = db.ref('settings/purgeTime');
 
-  document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;
+  function updateTableHeaderTitle() {
+    document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;
+  }
+  updateTableHeaderTitle();
+
+  function checkAutoPurgeTime() {
+    if (!purgeTime) return;
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const purgeMinutes = timeToMinutes(purgeTime);
+
+    if (currentMinutes >= purgeMinutes && queueItems.length > 0) {
+      queueRef.remove().then(() => {
+        console.log(`Очередь автоматически очищена при наступлении ${purgeTime}`);
+      }).catch(err => console.error("Ошибка автоочистки:", err));
+    }
+  }
+
+  function attachQueueListener() {
+    queueRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      queueItems = [];
+      if (data) {
+        Object.keys(data).forEach(key => { queueItems.push(data[key]); });
+      }
+      renderTable();
+      checkDeviceRegistration();
+      checkAutoPurgeTime();
+    });
+  }
+  attachQueueListener();
+
+  setInterval(() => {
+    const currentDay = getTodayString();
+    if (currentDay !== todayStr) {
+      todayStr = currentDay;
+      queueRef.off();
+      queueItems = [];
+      renderTable();
+      queueRef = db.ref('queues/' + todayStr);
+      attachQueueListener();
+      updateTableHeaderTitle();
+    } else {
+      checkAutoPurgeTime();
+    }
+  }, 5000);
+
+  settingsTimeRef.on('value', (snapshot) => {
+    const val = snapshot.val();
+    if (val && val.start && val.end) {
+      workingHours = val;
+      document.getElementById('startTimeInput').value = val.start;
+      document.getElementById('endTimeInput').value = val.end;
+    }
+    checkDeviceRegistration();
+  });
+
+  settingsRadiusRef.on('value', (snapshot) => {
+    const val = snapshot.val();
+    if (val && !isNaN(val)) {
+      ALLOWED_RADIUS_METERS = parseInt(val, 10);
+      document.getElementById('radiusInput').value = ALLOWED_RADIUS_METERS;
+      
+      if (sizocircle && typeof ymaps !== 'undefined') {
+        sizocircle.geometry.setRadius(ALLOWED_RADIUS_METERS);
+        sizocircle.properties.set('balloonContent', `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`);
+      }
+      
+      verifyUserLocation();
+    }
+  });
+
+  settingsPurgeRef.on('value', (snapshot) => {
+    const val = snapshot.val();
+    if (val) {
+      purgeTime = val;
+      document.getElementById('purgeTimeInput').value = val;
+      checkAutoPurgeTime();
+    }
+  });
 
   function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
@@ -416,7 +590,6 @@
     return R * c;
   }
 
-  // БЕЗОПАСНАЯ ПРОВЕРКА ГЕОЛОКАЦИИ И ИНИЦИАЛИЗАЦИЯ КАРТЫ
   function verifyUserLocation() {
     const geoStatus = document.getElementById('geoStatus');
     const mapBox = document.getElementById('mapContainer');
@@ -424,7 +597,7 @@
 
     if (!navigator.geolocation) {
       geoStatus.className = "geo-status-box geo-error";
-      geoStatus.innerText = "❌ Геопозиционирование не поддерживается.";
+      geoStatus.innerText = "❌ Геопозиционирование не поддерживается браузером.";
       isUserLocationValid = false;
       toggleButtonsState();
       return;
@@ -440,48 +613,68 @@
         coordsBox.style.display = 'block';
         coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
 
-        // Отрисовка 2GIS с защитой от ошибок сети
-        try {
-          if (window.mapgl) {
-            mapBox.style.display = 'block';
-            if (!map2gis) {
-              map2gis = new mapgl.Map('mapContainer', {
-                center: [userLng, userLat],
-                zoom: 16,
-                key: MAPS_2GIS_KEY,
-              });
+        if (typeof ymaps !== 'undefined' && ymaps.Map) {
+          mapBox.style.display = 'block';
+          ymaps.ready(() => {
+            if (!ymapsMap) {
+              try {
+                ymapsMap = new ymaps.Map("mapContainer", {
+                  center: [SIZO_LAT, SIZO_LNG],
+                  zoom: 16,
+                  controls: ['zoomControl', 'fullscreenControl']
+                });
 
-              new mapgl.Marker(map2gis, {
-                coordinates: [SIZO_LNG, SIZO_LAT],
-                label: { text: 'СИЗО КПП' }
-              });
+                const sizoplacemark = new ymaps.Placemark([SIZO_LAT, SIZO_LNG], {
+                  balloonContent: '<b>Здание СИЗО (КПП)</b>'
+                }, { preset: 'islands#redDotIcon' });
 
-              userMarker2gis = new mapgl.Marker(map2gis, {
-                coordinates: [userLng, userLat],
-                label: { text: 'Вы здесь' }
-              });
-            } else if (userMarker2gis) {
-              userMarker2gis.setCoordinates([userLng, userLat]);
+                sizocircle = new ymaps.Circle([
+                  [SIZO_LAT, SIZO_LNG],
+                  ALLOWED_RADIUS_METERS
+                ], {
+                  balloonContent: `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`
+                }, {
+                  fillColor: "#FF000022",
+                  strokeColor: "#FF0000",
+                  strokeOpacity: 0.8,
+                  strokeWidth: 2
+                });
+
+                const userPlacemark = new ymaps.Placemark([userLat, userLng], {
+                  balloonContent: '<b>Вы находитесь здесь</b>'
+                }, { preset: 'islands#blueCircleDotIcon' });
+
+                ymapsMap.geoObjects.add(sizocircle);
+                ymapsMap.geoObjects.add(sizoplacemark);
+                ymapsMap.geoObjects.add(userPlacemark);
+
+                ymapsMap.setBounds(ymapsMap.geoObjects.getBounds(), {
+                  checkZoomRange: true,
+                  zoomMargin: 30
+                });
+              } catch(e) {
+                console.warn("Карта недоступна, проверка идет по GPS", e);
+              }
             }
-          }
-        } catch(e) {
-          console.warn("Карта недоступна, проверка расстояния продолжается по GPS");
+          });
+        } else {
+          mapBox.style.display = 'none';
         }
 
         if (distance <= ALLOWED_RADIUS_METERS) {
           geoStatus.className = "geo-status-box geo-success";
-          geoStatus.innerText = `✅ Вы находитесь возле СИЗО (${Math.round(distance)} м). Запись разрешена.`;
+          geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;
           isUserLocationValid = true;
         } else {
           geoStatus.className = "geo-status-box geo-error";
-          geoStatus.innerText = `⛔ Вы находитесь слишком далеко от СИЗО (${Math.round(distance)} м). Допустимый радиус: ${ALLOWED_RADIUS_METERS} м.`;
+          geoStatus.innerText = `⛔ Запись возможна только в районе разрешения! Вы в ${Math.round(distance)} м от СИЗО (допустимо: ${ALLOWED_RADIUS_METERS} м).`;
           isUserLocationValid = false;
         }
         toggleButtonsState();
       },
       (error) => {
         geoStatus.className = "geo-status-box geo-error";
-        geoStatus.innerText = "⚠️ Разрешите доступ к геопозиции (GPS), чтобы сверить местоположение с СИЗО.";
+        geoStatus.innerText = "⚠️ Разрешите доступ к геопозиции (GPS) в настройках браузера.";
         isUserLocationValid = false;
         toggleButtonsState();
       },
@@ -491,62 +684,59 @@
 
   verifyUserLocation();
 
-  auth.onAuthStateChanged((user) => {
-    if (user && user.email === document.getElementById('adminEmail').value) return;
-
-    if (user && user.providerData.some(p => p.providerId === 'google.com')) {
-      currentUser = user;
-      document.getElementById('btnGoogleLogin').style.display = 'none';
-      document.getElementById('userProfileInfo').style.display = 'flex';
-      document.getElementById('userAvatar').src = user.photoURL || '';
-      document.getElementById('userNameDisplay').innerText = user.displayName || 'Посетитель';
-      document.getElementById('userEmailDisplay').innerText = user.email || '';
-    } else {
-      currentUser = null;
-      document.getElementById('btnGoogleLogin').style.display = 'flex';
-      document.getElementById('userProfileInfo').style.display = 'none';
-    }
-    toggleButtonsState();
-    checkDeviceRegistration();
-  });
-
-  // НАДЁЖНЫЙ ВХОД ЧЕРЕЗ REDIRECT ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
-  function loginWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithRedirect(provider);
+  function timeToMinutes(timeStr) {
+    if (!timeStr) return 0;
+    const parts = timeStr.split(':');
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
   }
 
-  function logoutGoogle() { auth.signOut(); }
-
-  queueRef.on('value', (snapshot) => {
-    const data = snapshot.val();
-    queueItems = [];
-    if (data) {
-      Object.keys(data).forEach(key => { queueItems.push(data[key]); });
-    }
-    renderTable();
-    checkDeviceRegistration();
-  });
-
-  // Время записи: с 06:00 до 23:59 включительно
   function isWorkingHours() {
     const now = new Date();
-    const hours = now.getHours();
-    return hours >= 6 && hours < 24;
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const startMin = timeToMinutes(workingHours.start);
+    const endMin = timeToMinutes(workingHours.end);
+
+    return currentMinutes >= startMin && currentMinutes <= endMin;
   }
 
   setInterval(() => { checkDeviceRegistration(); }, 60000);
 
   function toggleButtonsState() {
     const isChecked = document.getElementById('consentCheckbox').checked;
-    const existing = currentUser ? queueItems.find(item => item.uid === currentUser.uid) : null;
+    const existing = queueItems.find(item => item.uid === clientId);
+    const warningBox = document.getElementById('consentWarningBox');
 
-    if (isWorkingHours() && currentUser && isChecked && isUserLocationValid && !existing) {
+    const inTime = isWorkingHours();
+    const inGeo = isUserLocationValid;
+
+    if (inTime && inGeo && isChecked && !existing) {
       document.getElementById('btnW2').disabled = false;
       document.getElementById('btnW3').disabled = false;
+      warningBox.style.display = 'none';
     } else {
       document.getElementById('btnW2').disabled = true;
       document.getElementById('btnW3').disabled = true;
+
+      if (isChecked && !existing && (!inTime || !inGeo)) {
+        let reasons = [];
+        if (!inGeo) {
+          reasons.push(`📍 <strong>Геопозиция:</strong> Вы находитесь вне разрешенного радиуса (${ALLOWED_RADIUS_METERS} м) от СИЗО.`);
+        }
+        if (!inTime) {
+          reasons.push(`🕒 <strong>Время приема:</strong> Запись закрыта. График работы — с ${workingHours.start} до ${workingHours.end}.`);
+        }
+
+        warningBox.innerHTML = `
+          <strong>⛔ Встать в очередь невозможно:</strong>
+          <ul style="margin: 4px 0 0 0; padding-left: 16px;">
+            ${reasons.map(r => `<li style="margin-top: 2px;">${r}</li>`).join('')}
+          </ul>
+        `;
+        warningBox.style.display = 'block';
+      } else {
+        warningBox.style.display = 'none';
+      }
     }
   }
 
@@ -556,7 +746,7 @@
     const alertBox = document.getElementById('alertBox');
     const registrationBlock = document.getElementById('registrationBlock');
 
-    const existing = currentUser ? queueItems.find(item => item.uid === currentUser.uid) : null;
+    const existing = queueItems.find(item => item.uid === clientId);
 
     if (!isWorkingHours()) {
       btnW2.disabled = true;
@@ -568,15 +758,15 @@
           alertBox.style.display = 'block';
           alertBox.innerHTML = `
             <div class="alert-content">
-              <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Талон</button>
-              <div>⚠️ <strong>${existing.userName}</strong>, вы зарегистрированы под номером <strong>${existing.code}</strong>. Прием новых заявок завершен.</div>
+              <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Мой талон</button>
+              <div>⚠️ Вы зарегистрированы под номером <strong>${existing.code}</strong>. Прием новых заявок завершен.</div>
             </div>`;
         }
       } else {
         if (registrationBlock) registrationBlock.style.display = 'none';
         if (alertBox) {
           alertBox.style.display = 'block';
-          alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает ежедневно с 06:00 до 23:59.`;
+          alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает с ${workingHours.start} до ${workingHours.end}.`;
         }
       }
       return;
@@ -590,8 +780,8 @@
         alertBox.style.display = 'block';
         alertBox.innerHTML = `
           <div class="alert-content">
-            <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Талон</button>
-            <div>⚠️ <strong>${existing.userName}</strong>, вы уже записаны под номером <strong>${existing.code}</strong>. Повторная запись заблокирована.</div>
+            <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Мой талон</button>
+            <div>⚠️ Вы уже записаны под номером <strong>${existing.code}</strong>. Повторная запись с одного устройства заблокирована.</div>
           </div>`;
       }
     } else {
@@ -602,14 +792,13 @@
   }
 
   function registerUser(windowNum) {
-    if (!isWorkingHours()) { alert("Запись открыта только с 06:00 до 23:59!"); return; }
-    if (!isUserLocationValid) { alert("Запись отклонена: вы находитесь слишком далеко от СИЗО!"); return; }
-    if (!currentUser) { alert("Сначала войдите через Google!"); return; }
+    if (!isWorkingHours()) { alert(`Запись открыта только с ${workingHours.start} до ${workingHours.end}!`); return; }
+    if (!isUserLocationValid) { alert("Запись отклонена: занять очередь возможно только в районе радиуса действия разрешения СИЗО!"); return; }
 
     const consentChecked = document.getElementById('consentCheckbox').checked;
     if (!consentChecked) { alert("Подтвердите согласие с правилами!"); return; }
 
-    const existing = queueItems.find(item => item.uid === currentUser.uid);
+    const existing = queueItems.find(item => item.uid === clientId);
     if (existing) {
       alert(`Вы уже брали талон на сегодня: ${existing.code}`);
       showTicket(existing.code);
@@ -623,10 +812,8 @@
 
     const newItem = {
       code: code,
-      userName: currentUser.displayName || 'Посетитель',
       windowNum: windowNum,
-      photo: currentUser.photoURL || '',
-      uid: currentUser.uid,
+      uid: clientId,
       time: timeStr,
       timestamp: Date.now()
     };
@@ -639,7 +826,7 @@
   function renderTable() {
     const tbody = document.getElementById('queueTableBody');
     if (queueItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';
       return;
     }
 
@@ -651,8 +838,6 @@
     tbody.innerHTML = sorted.map(item => `
       <tr>
         <td><strong>${item.code}</strong></td>
-        <td>${item.photo ? `<img src="${item.photo}" class="table-user-photo" alt="Фото">` : '<span style="color:#aaa;">—</span>'}</td>
-        <td>${item.userName || '—'}</td>
         <td>Окно №${item.windowNum}</td>
         <td>${item.time}</td>
       </tr>
@@ -662,45 +847,65 @@
   function openPolicyModal() { document.getElementById('policyModalOverlay').style.display = 'flex'; }
   function openAdminModal() { document.getElementById('adminModalOverlay').style.display = 'flex'; }
 
-  // БЕЗОПАСНАЯ ОЧИСТКА ВСЕЙ БАЗЫ И АРХИВА
+  function authenticateAdmin(email, password) {
+    if (auth.currentUser && auth.currentUser.email === email) {
+      return Promise.resolve();
+    }
+    return auth.signInWithEmailAndPassword(email, password);
+  }
+
+  function submitSaveSettings() {
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPassword').value.trim();
+    const startVal = document.getElementById('startTimeInput').value;
+    const endVal = document.getElementById('endTimeInput').value;
+    const purgeVal = document.getElementById('purgeTimeInput').value;
+    const radiusVal = parseInt(document.getElementById('radiusInput').value, 10);
+
+    if (!email || !password) { alert('Введите email и пароль администратора'); return; }
+    if (!startVal || !endVal) { alert('Укажите время начала и окончания'); return; }
+    if (!purgeVal) { alert('Укажите время автоматической очистки очереди'); return; }
+    if (isNaN(radiusVal) || radiusVal <= 0) { alert('Укажите корректный радиус в метрах'); return; }
+
+    authenticateAdmin(email, password)
+      .then(() => {
+        return Promise.all([
+          settingsTimeRef.set({ start: startVal, end: endVal }),
+          settingsPurgeRef.set(purgeVal),
+          settingsRadiusRef.set(radiusVal)
+        ]);
+      })
+      .then(() => {
+        alert(`Настройки успешно сохранены!\nГрафик записи: с ${startVal} до ${endVal}\nОчистка списка: в ${purgeVal}\nРадиус: ${radiusVal} метров`);
+        closeModal('adminModalOverlay');
+        auth.signOut();
+      })
+      .catch((error) => { alert('Ошибка авторизации админа: ' + error.message); });
+  }
+
   function submitAdminReset() {
     const email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
 
-    if (!email || !password) { alert('Введите email и пароль'); return; }
+    if (!email || !password) { alert('Введите email и пароль администратора'); return; }
 
-    auth.signInWithEmailAndPassword(email, password)
+    authenticateAdmin(email, password)
       .then(() => {
         if (confirm('ВНИМАНИЕ! Вы действительно хотите очистить всю очередь И ВЕСЬ АРХИВ прошлых дней?')) {
-          return db.ref('queues').once('value').then((snapshot) => {
-            const updates = {};
-            snapshot.forEach((childSnapshot) => {
-              updates[childSnapshot.key] = null;
-            });
-            return db.ref('queues').update(updates);
-          }).then(() => {
+          return db.ref('queues').remove().then(() => {
             alert('Вся очередь и архив прошлых дней успешно очищены!');
             closeModal('adminModalOverlay');
             auth.signOut();
           });
         }
       })
-      .catch((error) => { alert('Ошибка авторизации: ' + error.message); });
+      .catch((error) => { alert('Ошибка авторизации админа: ' + error.message); });
   }
 
   function showTicket(code) {
     const item = queueItems.find(i => i.code === code);
     if (!item) return;
 
-    const imgElem = document.getElementById('mPhoto');
-    if (item.photo) {
-      imgElem.src = item.photo;
-      imgElem.style.display = 'inline-block';
-    } else {
-      imgElem.style.display = 'none';
-    }
-
-    document.getElementById('mName').innerText = item.userName || '';
     document.getElementById('mWindow').innerText = `ОКОШКО №${item.windowNum}`;
     document.getElementById('mNumber').innerText = item.code;
     document.getElementById('mTime').innerText = `Выдан: ${item.time}`;
@@ -710,7 +915,6 @@
 
   function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-  // РЕГИСТРАЦИЯ PWA SERVICE WORKER
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
