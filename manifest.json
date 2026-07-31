@@ -1,22 +1,25 @@
 {
-  "name": "Электронная очередь СИЗО",
   "short_name": "Очередь СИЗО",
-  "description": "Электронная очередь приёма передач СИЗО",
-  "start_url": "./index.html",
+  "name": "Электронная очередь СИЗО",
+  "description": "Онлайн-запись в электронную очередь СИЗО",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f4f6f9",
   "theme_color": "#1a252f",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3596/3596091.png",
+      "type": "image/png",
       "sizes": "192x192",
-      "type": "image/png"
+      "purpose": "any maskable"
     },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3596/3596091.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "type": "image/png"
+      "purpose": "any maskable"
     }
   ]
 }
