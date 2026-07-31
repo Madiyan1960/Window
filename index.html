@@ -402,12 +402,14 @@
   
   let ALLOWED_RADIUS_METERS = 300; 
 
+  // Базовые настройки по умолчанию (до подгрузки из БД)
   let workingHours = {
     start: "00:01",
-    end: "16:30"
+    end: "23:59"
   };
 
-  let purgeTime = "18:00";
+  // Важно: null по умолчанию, чтобы автоочистка не срабатывала до получения данных из админки
+  let purgeTime = null; 
 
   const firebaseConfig = { 
     apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI", 
@@ -490,7 +492,7 @@
   updateTableHeaderTitle();
 
   function checkAutoPurgeTime() {
-    if (!purgeTime) return;
+    if (!purgeTime) return; // Если время в БД ещё не настроено — очистку не выполняем
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const purgeMinutes = timeToMinutes(purgeTime);
@@ -740,7 +742,6 @@
     }
   }
 
-  // Обновленный метод проверки талона
   function checkDeviceRegistration() {
     const btnW2 = document.getElementById('btnW2');
     const btnW3 = document.getElementById('btnW3');
@@ -750,7 +751,7 @@
     // 1. Ищем в базе данных
     let existing = queueItems.find(item => item.uid === clientId);
 
-    // 2. Если в базе еще не найдено, забираем из локальной памяти браузера
+    // 2. Забираем из локальной памяти устройства
     if (!existing) {
       const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
       if (savedTicketJson) {
@@ -791,7 +792,6 @@
     toggleButtonsState();
   }
 
-  // Обновленный метод регистрации
   function registerUser(windowNum) {
     if (!isWorkingHours()) { alert(`Запись открыта только с ${workingHours.start} до ${workingHours.end}!`); return; }
     if (!isUserLocationValid) { alert("Запись отклонена: занять очередь возможно только в районе радиуса действия разрешения СИЗО!"); return; }
@@ -812,7 +812,7 @@
       timestamp: Date.now()
     };
 
-    // Мгновенное сохранение в браузер
+    // Сохранение в браузер
     localStorage.setItem('sizo_ticket_obj_' + todayStr, JSON.stringify(newItem));
 
     queueRef.push(newItem).then(() => {
