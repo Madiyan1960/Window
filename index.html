@@ -213,10 +213,10 @@
       margin-top: 8px; 
       padding-top: 6px; 
       border-top: 1px dashed #cbd5e1; 
-      display: flex; 
+      display: none; 
       justify-content: flex-end; 
     }
-    .btn-admin-reset { background: transparent; color: #7f8c8d; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
+    .btn-admin-reset { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
 
     .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
     
@@ -388,8 +388,9 @@
       </table>
     </div>
 
+    <!-- Скрытая панель администратора по умолчанию -->
     <div id="adminPanelBlock" class="admin-panel">
-      <button class="btn-admin-reset" type="button" onclick="openAdminModal()">⚙️ Вход для администратора</button>
+      <button class="btn-admin-reset" type="button" onclick="openAdminModal()">⚙️ Управление записью (Админ)</button>
     </div>
   </div>
 </div>
@@ -461,36 +462,65 @@
 </div>
 
 <script>
-  const SIZO_LAT = 51.201117;[cite: 2]
-  const SIZO_LNG = 71.483657;[cite: 2]
+  const SIZO_LAT = 51.201117;[cite: 1, 2]
+  const SIZO_LNG = 71.483657;[cite: 1, 2]
   
-  let ALLOWED_RADIUS_METERS = 300;[cite: 2]
-  let workingHours = { start: "00:01", end: "23:59" };[cite: 2]
-  let purgeTime = null;[cite: 2]
-  let currentUserType = 'citizen';[cite: 2]
+  let ALLOWED_RADIUS_METERS = 300;[cite: 1, 2]
+  let workingHours = { start: "00:01", end: "23:59" };[cite: 1, 2]
+  let purgeTime = null;[cite: 1, 2]
+  let currentUserType = 'citizen';[cite: 1, 2]
   let lastSubmitTime = 0;
 
   const firebaseConfig = { 
-    apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI",[cite: 2]
-    authDomain: "window-54e93.firebaseapp.com",[cite: 2]
-    databaseURL: "https://window-54e93-default-rtdb.europe-west1.firebasedatabase.app",[cite: 2]
-    projectId: "window-54e93",[cite: 2]
-    storageBucket: "window-54e93.firebasestorage.app",[cite: 2]
-    messagingSenderId: "214954614953",[cite: 2]
-    appId: "1:214954614953:web:7832b8368aea4fa19a09b8",[cite: 2]
-    measurementId: "G-HX2G4YJW6C"[cite: 2]
+    apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI",[cite: 1, 2]
+    authDomain: "window-54e93.firebaseapp.com",[cite: 1, 2]
+    databaseURL: "https://window-54e93-default-rtdb.europe-west1.firebasedatabase.app",[cite: 1, 2]
+    projectId: "window-54e93",[cite: 1, 2]
+    storageBucket: "window-54e93.firebasestorage.app",[cite: 1, 2]
+    messagingSenderId: "214954614953",[cite: 1, 2]
+    appId: "1:214954614953:web:7832b8368aea4fa19a09b8",[cite: 1, 2]
+    measurementId: "G-HX2G4YJW6C"[cite: 1, 2]
   };
 
-  firebase.initializeApp(firebaseConfig);[cite: 2]
-  const db = firebase.database();[cite: 2]
-  const auth = firebase.auth();[cite: 2]
+  firebase.initializeApp(firebaseConfig);[cite: 1, 2]
+  const db = firebase.database();[cite: 1, 2]
+  const auth = firebase.auth();[cite: 1, 2]
 
-  let queueItems = [];[cite: 2]
-  let isUserLocationValid = false;[cite: 2]
-  let ymapsMap = null;[cite: 2]
-  let sizocircle = null;[cite: 2]
+  let queueItems = [];[cite: 1, 2]
+  let isUserLocationValid = false;[cite: 1, 2]
+  let ymapsMap = null;[cite: 1, 2]
+  let sizocircle = null;[cite: 1, 2]
   let userPlacemark = null;
-  let isQueueLoaded = false;[cite: 2]
+  let isQueueLoaded = false;[cite: 1, 2]
+
+  // Обработчик 4 кликов для открытия админ-панели
+  let tapCount = 0;
+  let lastTapTime = 0;
+
+  document.body.addEventListener('click', (e) => {
+    if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy')) {
+      return;
+    }
+
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapTime;
+
+    if (tapLength < 500 && tapLength > 0) {
+      tapCount++;
+    } else {
+      tapCount = 1;
+    }
+    lastTapTime = currentTime;
+
+    if (tapCount === 4) {
+      const adminBlock = document.getElementById('adminPanelBlock');
+      if (adminBlock) {
+        adminBlock.style.display = 'flex';
+        adminBlock.scrollIntoView({ behavior: 'smooth' });
+      }
+      tapCount = 0;
+    }
+  });
 
   function escapeHTML(str) {
     if (!str) return '';
@@ -535,187 +565,187 @@
   const clientId = getDeviceId();
 
   function switchUserType(type) {
-    currentUserType = type;[cite: 2]
-    const citizenBtn = document.getElementById('typeCitizenBtn');[cite: 2]
-    const publicBtn = document.getElementById('typePublicBtn');[cite: 2]
-    const citizenBtnsBlock = document.getElementById('citizenButtons');[cite: 2]
-    const publicBtnsBlock = document.getElementById('publicButtons');[cite: 2]
-    const publicNameBlock = document.getElementById('publicNameBlock');[cite: 2]
+    currentUserType = type;[cite: 1, 2]
+    const citizenBtn = document.getElementById('typeCitizenBtn');[cite: 1, 2]
+    const publicBtn = document.getElementById('typePublicBtn');[cite: 1, 2]
+    const citizenBtnsBlock = document.getElementById('citizenButtons');[cite: 1, 2]
+    const publicBtnsBlock = document.getElementById('publicButtons');[cite: 1, 2]
+    const publicNameBlock = document.getElementById('publicNameBlock');[cite: 1, 2]
 
     if (type === 'citizen') {
-      citizenBtn.classList.add('active');[cite: 2]
-      publicBtn.classList.remove('active');[cite: 2]
-      citizenBtnsBlock.style.display = 'flex';[cite: 2]
-      publicBtnsBlock.style.display = 'none';[cite: 2]
-      publicNameBlock.style.display = 'none';[cite: 2]
+      citizenBtn.classList.add('active');[cite: 1, 2]
+      publicBtn.classList.remove('active');[cite: 1, 2]
+      citizenBtnsBlock.style.display = 'flex';[cite: 1, 2]
+      publicBtnsBlock.style.display = 'none';[cite: 1, 2]
+      publicNameBlock.style.display = 'none';[cite: 1, 2]
     } else {
-      publicBtn.classList.add('active');[cite: 2]
-      citizenBtn.classList.remove('active');[cite: 2]
-      citizenBtnsBlock.style.display = 'none';[cite: 2]
-      publicBtnsBlock.style.display = 'flex';[cite: 2]
-      publicNameBlock.style.display = 'block';[cite: 2]
+      publicBtn.classList.add('active');[cite: 1, 2]
+      citizenBtn.classList.remove('active');[cite: 1, 2]
+      citizenBtnsBlock.style.display = 'none';[cite: 1, 2]
+      publicBtnsBlock.style.display = 'flex';[cite: 1, 2]
+      publicNameBlock.style.display = 'block';[cite: 1, 2]
     }
     toggleButtonsState();
   }
 
   function getTodayString() {
-    const d = new Date();[cite: 2]
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;[cite: 2]
+    const d = new Date();[cite: 1, 2]
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;[cite: 1, 2]
   }
 
   function getFormattedTodayDate() {
-    const d = new Date();[cite: 2]
-    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;[cite: 2]
+    const d = new Date();[cite: 1, 2]
+    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;[cite: 1, 2]
   }
 
-  let todayStr = getTodayString();[cite: 2]
-  let queueRef = db.ref('queues/' + todayStr);[cite: 2]
-  const settingsTimeRef = db.ref('settings/workingHours');[cite: 2]
-  const settingsRadiusRef = db.ref('settings/radius');[cite: 2]
-  const settingsPurgeRef = db.ref('settings/purgeTime');[cite: 2]
+  let todayStr = getTodayString();[cite: 1, 2]
+  let queueRef = db.ref('queues/' + todayStr);[cite: 1, 2]
+  const settingsTimeRef = db.ref('settings/workingHours');[cite: 1, 2]
+  const settingsRadiusRef = db.ref('settings/radius');[cite: 1, 2]
+  const settingsPurgeRef = db.ref('settings/purgeTime');[cite: 1, 2]
 
   function updateTableHeaderTitle() {
-    document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;[cite: 2]
+    document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;[cite: 1, 2]
   }
-  updateTableHeaderTitle();[cite: 2]
+  updateTableHeaderTitle();[cite: 1, 2]
 
   function checkAutoPurgeTime() {
-    if (!purgeTime) return;[cite: 2]
-    const now = new Date();[cite: 2]
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();[cite: 2]
-    const purgeMinutes = timeToMinutes(purgeTime);[cite: 2]
+    if (!purgeTime) return;[cite: 1, 2]
+    const now = new Date();[cite: 1, 2]
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();[cite: 1, 2]
+    const purgeMinutes = timeToMinutes(purgeTime);[cite: 1, 2]
 
     if (currentMinutes >= purgeMinutes && queueItems.length > 0) {
       queueRef.remove().then(() => {
-        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 2]
-      }).catch(err => console.error("Ошибка автоочистки:", err));[cite: 2]
+        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 1, 2]
+      }).catch(err => console.error("Ошибка автоочистки:", err));[cite: 1, 2]
     }
   }
 
   function attachQueueListener() {
     queueRef.on('value', (snapshot) => {
-      isQueueLoaded = true;[cite: 2]
-      const data = snapshot.val();[cite: 2]
-      queueItems = [];[cite: 2]
+      isQueueLoaded = true;[cite: 1, 2]
+      const data = snapshot.val();[cite: 1, 2]
+      queueItems = [];[cite: 1, 2]
       if (data) {
-        Object.keys(data).forEach(key => { queueItems.push(data[key]); });[cite: 2]
+        Object.keys(data).forEach(key => { queueItems.push(data[key]); });[cite: 1, 2]
       }
       
-      const stillExists = queueItems.find(item => item.uid === clientId);[cite: 2]
+      const stillExists = queueItems.find(item => item.uid === clientId);[cite: 1, 2]
       if (!stillExists) {
-        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 2]
+        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 1, 2]
       }
 
-      renderTable();[cite: 2]
-      checkDeviceRegistration();[cite: 2]
-      checkAutoPurgeTime();[cite: 2]
+      renderTable();[cite: 1, 2]
+      checkDeviceRegistration();[cite: 1, 2]
+      checkAutoPurgeTime();[cite: 1, 2]
     });
   }
-  attachQueueListener();[cite: 2]
+  attachQueueListener();[cite: 1, 2]
 
   setInterval(() => {
-    const currentDay = getTodayString();[cite: 2]
+    const currentDay = getTodayString();[cite: 1, 2]
     if (currentDay !== todayStr) {
-      localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 2]
-      todayStr = currentDay;[cite: 2]
-      isQueueLoaded = false;[cite: 2]
-      queueRef.off();[cite: 2]
-      queueItems = [];[cite: 2]
-      renderTable();[cite: 2]
-      queueRef = db.ref('queues/' + todayStr);[cite: 2]
-      attachQueueListener();[cite: 2]
-      updateTableHeaderTitle();[cite: 2]
+      localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 1, 2]
+      todayStr = currentDay;[cite: 1, 2]
+      isQueueLoaded = false;[cite: 1, 2]
+      queueRef.off();[cite: 1, 2]
+      queueItems = [];[cite: 1, 2]
+      renderTable();[cite: 1, 2]
+      queueRef = db.ref('queues/' + todayStr);[cite: 1, 2]
+      attachQueueListener();[cite: 1, 2]
+      updateTableHeaderTitle();[cite: 1, 2]
     } else {
-      checkAutoPurgeTime();[cite: 2]
+      checkAutoPurgeTime();[cite: 1, 2]
     }
-  }, 5000);[cite: 2]
+  }, 5000);[cite: 1, 2]
 
   settingsTimeRef.on('value', (snapshot) => {
-    const val = snapshot.val();[cite: 2]
+    const val = snapshot.val();[cite: 1, 2]
     if (val && val.start && val.end) {
-      workingHours = val;[cite: 2]
-      document.getElementById('startTimeInput').value = val.start;[cite: 2]
-      document.getElementById('endTimeInput').value = val.end;[cite: 2]
+      workingHours = val;[cite: 1, 2]
+      document.getElementById('startTimeInput').value = val.start;[cite: 1, 2]
+      document.getElementById('endTimeInput').value = val.end;[cite: 1, 2]
     }
-    checkDeviceRegistration();[cite: 2]
+    checkDeviceRegistration();[cite: 1, 2]
   });
 
   settingsRadiusRef.on('value', (snapshot) => {
-    const val = snapshot.val();[cite: 2]
+    const val = snapshot.val();[cite: 1, 2]
     if (val && !isNaN(val)) {
-      ALLOWED_RADIUS_METERS = parseInt(val, 10);[cite: 2]
-      document.getElementById('radiusInput').value = ALLOWED_RADIUS_METERS;[cite: 2]
+      ALLOWED_RADIUS_METERS = parseInt(val, 10);[cite: 1, 2]
+      document.getElementById('radiusInput').value = ALLOWED_RADIUS_METERS;[cite: 1, 2]
       
       if (sizocircle && typeof ymaps !== 'undefined') {
-        sizocircle.geometry.setRadius(ALLOWED_RADIUS_METERS);[cite: 2]
-        sizocircle.properties.set('balloonContent', `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`);[cite: 2]
+        sizocircle.geometry.setRadius(ALLOWED_RADIUS_METERS);[cite: 1, 2]
+        sizocircle.properties.set('balloonContent', `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`);[cite: 1, 2]
       }
     }
   });
 
   settingsPurgeRef.on('value', (snapshot) => {
-    const val = snapshot.val();[cite: 2]
+    const val = snapshot.val();[cite: 1, 2]
     if (val) {
-      purgeTime = val;[cite: 2]
-      document.getElementById('purgeTimeInput').value = val;[cite: 2]
-      checkAutoPurgeTime();[cite: 2]
+      purgeTime = val;[cite: 1, 2]
+      document.getElementById('purgeTimeInput').value = val;[cite: 1, 2]
+      checkAutoPurgeTime();[cite: 1, 2]
     }
   });
 
   function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371e3;[cite: 2]
-    const φ1 = lat1 * Math.PI / 180;[cite: 2]
-    const φ2 = lat2 * Math.PI / 180;[cite: 2]
-    const Δφ = (lat2 - lat1) * Math.PI / 180;[cite: 2]
-    const Δλ = (lon2 - lon1) * Math.PI / 180;[cite: 2]
+    const R = 6371e3;[cite: 1, 2]
+    const φ1 = lat1 * Math.PI / 180;[cite: 1, 2]
+    const φ2 = lat2 * Math.PI / 180;[cite: 1, 2]
+    const Δφ = (lat2 - lat1) * Math.PI / 180;[cite: 1, 2]
+    const Δλ = (lon2 - lon1) * Math.PI / 180;[cite: 1, 2]
 
     const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
               Math.cos(φ1) * Math.cos(φ2) *
-              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);[cite: 2]
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));[cite: 2]
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);[cite: 1, 2]
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));[cite: 1, 2]
 
-    return R * c;[cite: 2]
+    return R * c;[cite: 1, 2]
   }
 
   function handlePositionSuccess(position) {
-    const geoStatus = document.getElementById('geoStatus');[cite: 2]
-    const mapBox = document.getElementById('mapContainer');[cite: 2]
-    const coordsBox = document.getElementById('locationCoords');[cite: 2]
+    const geoStatus = document.getElementById('geoStatus');[cite: 1, 2]
+    const mapBox = document.getElementById('mapContainer');[cite: 1, 2]
+    const coordsBox = document.getElementById('locationCoords');[cite: 1, 2]
 
-    const userLat = position.coords.latitude;[cite: 2]
-    const userLng = position.coords.longitude;[cite: 2]
-    const accuracy = position.coords.accuracy;[cite: 2]
+    const userLat = position.coords.latitude;[cite: 1, 2]
+    const userLng = position.coords.longitude;[cite: 1, 2]
+    const accuracy = position.coords.accuracy;[cite: 1, 2]
 
-    const distance = calculateDistance(userLat, userLng, SIZO_LAT, SIZO_LNG);[cite: 2]
+    const distance = calculateDistance(userLat, userLng, SIZO_LAT, SIZO_LNG);[cite: 1, 2]
 
-    coordsBox.style.display = 'block';[cite: 2]
-    coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;[cite: 2]
+    coordsBox.style.display = 'block';[cite: 1, 2]
+    coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;[cite: 1, 2]
 
     if (typeof ymaps !== 'undefined' && ymaps.Map) {
-      mapBox.style.display = 'block';[cite: 2]
+      mapBox.style.display = 'block';[cite: 1, 2]
       ymaps.ready(() => {
         if (!ymapsMap) {
           try {
             ymapsMap = new ymaps.Map("mapContainer", {
-              center: [SIZO_LAT, SIZO_LNG],[cite: 2]
-              zoom: 16,[cite: 2]
-              controls: ['zoomControl', 'fullscreenControl'][cite: 2]
+              center: [SIZO_LAT, SIZO_LNG],[cite: 1, 2]
+              zoom: 16,[cite: 1, 2]
+              controls: ['zoomControl', 'fullscreenControl'][cite: 1, 2]
             });
 
-            const sizoplacemark = new ymaps.Placemark([SIZO_LAT, SIZO_LNG], {[cite: 2]
-              balloonContent: '<b>Здание СИЗО (КПП)</b>'[cite: 2]
-            }, { preset: 'islands#redDotIcon' });[cite: 2]
+            const sizoplacemark = new ymaps.Placemark([SIZO_LAT, SIZO_LNG], {[cite: 1, 2]
+              balloonContent: '<b>Здание СИЗО (КПП)</b>'[cite: 1, 2]
+            }, { preset: 'islands#redDotIcon' });[cite: 1, 2]
 
-            sizocircle = new ymaps.Circle([[cite: 2]
-              [SIZO_LAT, SIZO_LNG],[cite: 2]
-              ALLOWED_RADIUS_METERS[cite: 2]
+            sizocircle = new ymaps.Circle([[cite: 1, 2]
+              [SIZO_LAT, SIZO_LNG],[cite: 1, 2]
+              ALLOWED_RADIUS_METERS[cite: 1, 2]
             ], {
-              balloonContent: `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`[cite: 2]
+              balloonContent: `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`[cite: 1, 2]
             }, {
-              fillColor: "#FF000022",[cite: 2]
-              strokeColor: "#FF0000",[cite: 2]
-              strokeOpacity: 0.8,[cite: 2]
-              strokeWidth: 2[cite: 2]
+              fillColor: "#FF000022",[cite: 1, 2]
+              strokeColor: "#FF0000",[cite: 1, 2]
+              strokeOpacity: 0.8,[cite: 1, 2]
+              strokeWidth: 2[cite: 1, 2]
             });
 
             // Метка человечка с подписью "Я"
@@ -724,8 +754,8 @@
               balloonContent: '<b>Вы находитесь здесь</b>'
             }, { preset: 'islands#blueUserIcon' });
 
-            ymapsMap.geoObjects.add(sizocircle);[cite: 2]
-            ymapsMap.geoObjects.add(sizoplacemark);[cite: 2]
+            ymapsMap.geoObjects.add(sizocircle);[cite: 1, 2]
+            ymapsMap.geoObjects.add(sizoplacemark);[cite: 1, 2]
             ymapsMap.geoObjects.add(userPlacemark);
 
             ymapsMap.setBounds(ymapsMap.geoObjects.getBounds(), {
@@ -748,23 +778,23 @@
     }
 
     if (distance <= ALLOWED_RADIUS_METERS) {
-      geoStatus.className = "geo-status-box geo-success";[cite: 2]
-      geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;[cite: 2]
-      isUserLocationValid = true;[cite: 2]
+      geoStatus.className = "geo-status-box geo-success";[cite: 1, 2]
+      geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;[cite: 1, 2]
+      isUserLocationValid = true;[cite: 1, 2]
     } else {
-      geoStatus.className = "geo-status-box geo-error";[cite: 2]
-      geoStatus.innerText = `⛔ Запись возможна только в районе разрешения! Вы в ${Math.round(distance)} м от СИЗО (допустимо: ${ALLOWED_RADIUS_METERS} м).`;[cite: 2]
-      isUserLocationValid = false;[cite: 2]
+      geoStatus.className = "geo-status-box geo-error";[cite: 1, 2]
+      geoStatus.innerText = `⛔ Запись возможна только в районе разрешения! Вы в ${Math.round(distance)} м от СИЗО (допустимо: ${ALLOWED_RADIUS_METERS} м).`;[cite: 1, 2]
+      isUserLocationValid = false;[cite: 1, 2]
     }
-    toggleButtonsState();[cite: 2]
+    toggleButtonsState();[cite: 1, 2]
   }
 
   function handlePositionError(error) {
-    const geoStatus = document.getElementById('geoStatus');[cite: 2]
-    geoStatus.className = "geo-status-box geo-error";[cite: 2]
-    geoStatus.innerText = "⚠️ Разрешите доступ к геопозиции (GPS) в настройках браузера.";[cite: 2]
-    isUserLocationValid = false;[cite: 2]
-    toggleButtonsState();[cite: 2]
+    const geoStatus = document.getElementById('geoStatus');[cite: 1, 2]
+    geoStatus.className = "geo-status-box geo-error";[cite: 1, 2]
+    geoStatus.innerText = "⚠️ Разрешите доступ к геопозиции (GPS) в настройках браузера.";[cite: 1, 2]
+    isUserLocationValid = false;[cite: 1, 2]
+    toggleButtonsState();[cite: 1, 2]
   }
 
   function initGeoTracking() {
@@ -780,42 +810,42 @@
   initGeoTracking();
 
   function timeToMinutes(timeStr) {
-    if (!timeStr) return 0;[cite: 2]
-    const parts = timeStr.split(':');[cite: 2]
-    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);[cite: 2]
+    if (!timeStr) return 0;[cite: 1, 2]
+    const parts = timeStr.split(':');[cite: 1, 2]
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);[cite: 1, 2]
   }
 
   function isWorkingHours() {
-    const now = new Date();[cite: 2]
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();[cite: 2]
-    const startMin = timeToMinutes(workingHours.start);[cite: 2]
-    const endMin = timeToMinutes(workingHours.end);[cite: 2]
+    const now = new Date();[cite: 1, 2]
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();[cite: 1, 2]
+    const startMin = timeToMinutes(workingHours.start);[cite: 1, 2]
+    const endMin = timeToMinutes(workingHours.end);[cite: 1, 2]
 
-    return currentMinutes >= startMin && currentMinutes <= endMin;[cite: 2]
+    return currentMinutes >= startMin && currentMinutes <= endMin;[cite: 1, 2]
   }
 
   function toggleButtonsState() {
-    const isChecked = document.getElementById('consentCheckbox').checked;[cite: 2]
+    const isChecked = document.getElementById('consentCheckbox').checked;[cite: 1, 2]
     
-    let existing = queueItems.find(item => item.uid === clientId);[cite: 2]
+    let existing = queueItems.find(item => item.uid === clientId);[cite: 1, 2]
     if (!existing && !isQueueLoaded) {
-      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 2]
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 1, 2]
       if (savedTicketJson) {
-        try { existing = JSON.parse(savedTicketJson); } catch(e){}[cite: 2]
+        try { existing = JSON.parse(savedTicketJson); } catch(e){}[cite: 1, 2]
       }
     }
 
-    const warningBox = document.getElementById('consentWarningBox');[cite: 2]
-    const inTime = isWorkingHours();[cite: 2]
-    const inGeo = isUserLocationValid;[cite: 2]
+    const warningBox = document.getElementById('consentWarningBox');[cite: 1, 2]
+    const inTime = isWorkingHours();[cite: 1, 2]
+    const inGeo = isUserLocationValid;[cite: 1, 2]
 
     if (isChecked && !existing && (!inTime || !inGeo)) {
-      let reasons = [];[cite: 2]
+      let reasons = [];[cite: 1, 2]
       if (!inGeo) {
-        reasons.push(`📍 <strong>Геопозиция:</strong> Вы находитесь вне разрешенного радиуса (${ALLOWED_RADIUS_METERS} м) от СИЗО.`);[cite: 2]
+        reasons.push(`📍 <strong>Геопозиция:</strong> Вы находитесь вне разрешенного радиуса (${ALLOWED_RADIUS_METERS} м) от СИЗО.`);[cite: 1, 2]
       }
       if (!inTime) {
-        reasons.push(`🕒 <strong>Время приема:</strong> Запись закрыта. График работы — с ${workingHours.start} до ${workingHours.end}.`);[cite: 2]
+        reasons.push(`🕒 <strong>Время приема:</strong> Запись закрыта. График работы — с ${workingHours.start} до ${workingHours.end}.`);[cite: 1, 2]
       }
 
       warningBox.innerHTML = `
@@ -823,55 +853,55 @@
         <ul style="margin: 4px 0 0 0; padding-left: 16px;">
           ${reasons.map(r => `<li style="margin-top: 2px;">${r}</li>`).join('')}
         </ul>
-      `;[cite: 2]
-      warningBox.style.display = 'block';[cite: 2]
+      `;[cite: 1, 2]
+      warningBox.style.display = 'block';[cite: 1, 2]
     } else {
-      warningBox.style.display = 'none';[cite: 2]
+      warningBox.style.display = 'none';[cite: 1, 2]
     }
   }
 
   function checkDeviceRegistration() {
-    const alertBox = document.getElementById('alertBox');[cite: 2]
-    const registrationBlock = document.getElementById('registrationBlock');[cite: 2]
+    const alertBox = document.getElementById('alertBox');[cite: 1, 2]
+    const registrationBlock = document.getElementById('registrationBlock');[cite: 1, 2]
 
-    let existingList = queueItems.filter(item => item.uid === clientId);[cite: 2]
+    let existingList = queueItems.filter(item => item.uid === clientId);[cite: 1, 2]
 
     if (existingList.length === 0 && !isQueueLoaded) {
-      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 2]
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 1, 2]
       if (savedTicketJson) {
         try {
-          const parsed = JSON.parse(savedTicketJson);[cite: 2]
-          existingList = Array.isArray(parsed) ? parsed : [parsed];[cite: 2]
+          const parsed = JSON.parse(savedTicketJson);[cite: 1, 2]
+          existingList = Array.isArray(parsed) ? parsed : [parsed];[cite: 1, 2]
         } catch(e) {}
       }
     }
 
     if (existingList.length > 0) {
-      if (registrationBlock) registrationBlock.style.display = 'none';[cite: 2]
+      if (registrationBlock) registrationBlock.style.display = 'none';[cite: 1, 2]
       if (alertBox) {
-        alertBox.style.display = 'block';[cite: 2]
+        alertBox.style.display = 'block';[cite: 1, 2]
         const codesStr = existingList.map(i => escapeHTML(i.code)).join(', ');
         alertBox.innerHTML = `
           <div class="alert-content">
             <button class="btn-alert-ticket" type="button" onclick="showTicket()">🎫 Мои талоны</button>
             <div>⚠️ Вы зарегистрированы под номером(-ами): <strong>${codesStr}</strong>. Повторная запись заблокирована.</div>
-          </div>`;[cite: 2]
+          </div>`;[cite: 1, 2]
       }
       return;
     }
 
     if (!isWorkingHours()) {
-      if (registrationBlock) registrationBlock.style.display = 'none';[cite: 2]
+      if (registrationBlock) registrationBlock.style.display = 'none';[cite: 1, 2]
       if (alertBox) {
-        alertBox.style.display = 'block';[cite: 2]
-        alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает с ${workingHours.start} до ${workingHours.end}.`;[cite: 2]
+        alertBox.style.display = 'block';[cite: 1, 2]
+        alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает с ${workingHours.start} до ${workingHours.end}.`;[cite: 1, 2]
       }
       return;
     }
 
-    if (registrationBlock) registrationBlock.style.display = 'block';[cite: 2]
-    if (alertBox) alertBox.style.display = 'none';[cite: 2]
-    toggleButtonsState();[cite: 2]
+    if (registrationBlock) registrationBlock.style.display = 'block';[cite: 1, 2]
+    if (alertBox) alertBox.style.display = 'none';[cite: 1, 2]
+    toggleButtonsState();[cite: 1, 2]
   }
 
   function registerUser(windowsArray) {
@@ -890,60 +920,60 @@
       return; 
     }
 
-    const consentChecked = document.getElementById('consentCheckbox').checked;[cite: 2]
+    const consentChecked = document.getElementById('consentCheckbox').checked;[cite: 1, 2]
     if (!consentChecked) { 
       alert("Подтвердите согласие с правилами записи!"); 
       return; 
     }
 
-    let publicName = "";[cite: 2]
+    let publicName = "";[cite: 1, 2]
     if (currentUserType === 'public') {
       publicName = escapeHTML(document.getElementById('publicNameInput').value.trim());
       if (!publicName) {
-        alert("Пожалуйста, укажите ваше имя перед выбором очереди!");[cite: 2]
+        alert("Пожалуйста, укажите ваше имя перед выбором очереди!");[cite: 1, 2]
         return;
       }
     }
 
-    const now = new Date();[cite: 2]
-    const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });[cite: 2]
-    const newItems = [];[cite: 2]
+    const now = new Date();[cite: 1, 2]
+    const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });[cite: 1, 2]
+    const newItems = [];[cite: 1, 2]
 
     windowsArray.forEach(winNum => {
-      const countInWindow = queueItems.filter(i => i.windowNum === winNum).length + 1;[cite: 2]
-      const code = `О${winNum}-${String(countInWindow).padStart(3, '0')}`;[cite: 2]
+      const countInWindow = queueItems.filter(i => i.windowNum === winNum).length + 1;[cite: 1, 2]
+      const code = `О${winNum}-${String(countInWindow).padStart(3, '0')}`;[cite: 1, 2]
       
       newItems.push({
-        code: code,[cite: 2]
-        windowNum: winNum,[cite: 2]
-        uid: clientId,[cite: 2]
-        time: timeStr,[cite: 2]
-        name: currentUserType === 'public' ? publicName : "Обычный посетитель",[cite: 2]
-        isPublic: currentUserType === 'public',[cite: 2]
-        timestamp: Date.now()[cite: 2]
+        code: code,[cite: 1, 2]
+        windowNum: winNum,[cite: 1, 2]
+        uid: clientId,[cite: 1, 2]
+        time: timeStr,[cite: 1, 2]
+        name: currentUserType === 'public' ? publicName : "Обычный посетитель",[cite: 1, 2]
+        isPublic: currentUserType === 'public',[cite: 1, 2]
+        timestamp: Date.now()[cite: 1, 2]
       });
     });
 
-    localStorage.setItem('sizo_ticket_obj_' + todayStr, JSON.stringify(newItems));[cite: 2]
+    localStorage.setItem('sizo_ticket_obj_' + todayStr, JSON.stringify(newItems));[cite: 1, 2]
 
-    const promises = newItems.map(item => queueRef.push(item));[cite: 2]
+    const promises = newItems.map(item => queueRef.push(item));[cite: 1, 2]
 
     Promise.all(promises).then(() => {
-      showTicket();[cite: 2]
-      checkDeviceRegistration();[cite: 2]
-    }).catch(err => { alert("Ошибка записи: " + err.message); });[cite: 2]
+      showTicket();[cite: 1, 2]
+      checkDeviceRegistration();[cite: 1, 2]
+    }).catch(err => { alert("Ошибка записи: " + err.message); });[cite: 1, 2]
   }
 
   function renderTable() {
-    const tbody = document.getElementById('queueTableBody');[cite: 2]
+    const tbody = document.getElementById('queueTableBody');[cite: 1, 2]
     if (queueItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';[cite: 2]
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';[cite: 1, 2]
       return;
     }
 
     const sorted = [...queueItems].sort((a, b) => {
-      if (a.windowNum !== b.windowNum) return a.windowNum - b.windowNum;[cite: 2]
-      return a.code.localeCompare(b.code, undefined, { numeric: true, sensitivity: 'base' });[cite: 2]
+      if (a.windowNum !== b.windowNum) return a.windowNum - b.windowNum;[cite: 1, 2]
+      return a.code.localeCompare(b.code, undefined, { numeric: true, sensitivity: 'base' });[cite: 1, 2]
     });
 
     tbody.innerHTML = sorted.map(item => `
@@ -956,19 +986,19 @@
     `).join('');
   }
 
-  function openPolicyModal() { document.getElementById('policyModalOverlay').style.display = 'flex'; }[cite: 2]
-  function openAdminModal() { document.getElementById('adminModalOverlay').style.display = 'flex'; }[cite: 2]
+  function openPolicyModal() { document.getElementById('policyModalOverlay').style.display = 'flex'; }[cite: 1, 2]
+  function openAdminModal() { document.getElementById('adminModalOverlay').style.display = 'flex'; }[cite: 1, 2]
 
   async function submitSaveSettings() {
-    const email = document.getElementById('adminEmail').value.trim();[cite: 2]
-    const password = document.getElementById('adminPassword').value.trim();[cite: 2]
-    const startVal = document.getElementById('startTimeInput').value;[cite: 2]
-    const endVal = document.getElementById('endTimeInput').value;[cite: 2]
-    const purgeVal = document.getElementById('purgeTimeInput').value;[cite: 2]
-    const radiusVal = parseInt(document.getElementById('radiusInput').value, 10);[cite: 2]
+    const email = document.getElementById('adminEmail').value.trim();[cite: 1, 2]
+    const password = document.getElementById('adminPassword').value.trim();[cite: 1, 2]
+    const startVal = document.getElementById('startTimeInput').value;[cite: 1, 2]
+    const endVal = document.getElementById('endTimeInput').value;[cite: 1, 2]
+    const purgeVal = document.getElementById('purgeTimeInput').value;[cite: 1, 2]
+    const radiusVal = parseInt(document.getElementById('radiusInput').value, 10);[cite: 1, 2]
 
     if (!email || !password) { 
-      alert('Введите email и пароль администратора');[cite: 2]
+      alert('Введите email и пароль администратора');[cite: 1, 2]
       return; 
     }
     if (!startVal || !endVal || !purgeVal || isNaN(radiusVal)) {
@@ -977,70 +1007,70 @@
     }
 
     try {
-      await auth.signInWithEmailAndPassword(email, password);[cite: 2]
+      await auth.signInWithEmailAndPassword(email, password);[cite: 1, 2]
       
       await Promise.all([
-        settingsTimeRef.set({ start: startVal, end: endVal }),[cite: 2]
-        settingsPurgeRef.set(purgeVal),[cite: 2]
-        settingsRadiusRef.set(radiusVal)[cite: 2]
+        settingsTimeRef.set({ start: startVal, end: endVal }),[cite: 1, 2]
+        settingsPurgeRef.set(purgeVal),[cite: 1, 2]
+        settingsRadiusRef.set(radiusVal)[cite: 1, 2]
       ]);
 
       alert('Настройки успешно сохранены!');
-      closeModal('adminModalOverlay');[cite: 2]
-      await auth.signOut();[cite: 2]
+      closeModal('adminModalOverlay');[cite: 1, 2]
+      await auth.signOut();[cite: 1, 2]
     } catch (error) {
       alert('Ошибка: ' + error.message);
     }
   }
 
   async function submitAdminReset() {
-    const email = document.getElementById('adminEmail').value.trim();[cite: 2]
-    const password = document.getElementById('adminPassword').value.trim();[cite: 2]
+    const email = document.getElementById('adminEmail').value.trim();[cite: 1, 2]
+    const password = document.getElementById('adminPassword').value.trim();[cite: 1, 2]
 
     if (!email || !password) { 
-      alert('Введите email и пароль администратора');[cite: 2]
+      alert('Введите email и пароль администратора');[cite: 1, 2]
       return; 
     }
 
     try {
-      await auth.signInWithEmailAndPassword(email, password);[cite: 2]
+      await auth.signInWithEmailAndPassword(email, password);[cite: 1, 2]
 
-      if (confirm('ВНИМАНИЕ! Вы действительно хотите очистить всю очередь И ВЕСЬ АРХИВ прошлых дней?')) {[cite: 2]
-        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 2]
-        await db.ref('queues').remove();[cite: 2]
+      if (confirm('ВНИМАНИЕ! Вы действительно хотите очистить всю очередь И ВЕСЬ АРХИВ прошлых дней?')) {[cite: 1, 2]
+        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 1, 2]
+        await db.ref('queues').remove();[cite: 1, 2]
         alert('Вся очередь успешно очищена!');
-        closeModal('adminModalOverlay');[cite: 2]
+        closeModal('adminModalOverlay');[cite: 1, 2]
       }
-      await auth.signOut();[cite: 2]
+      await auth.signOut();[cite: 1, 2]
     } catch (error) {
       alert('Ошибка: ' + error.message);
     }
   }
 
   function showTicket() {
-    let myTickets = queueItems.filter(i => i.uid === clientId);[cite: 2]
+    let myTickets = queueItems.filter(i => i.uid === clientId);[cite: 1, 2]
     
     if (myTickets.length === 0 && !isQueueLoaded) {
-      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 2]
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 1, 2]
       if (savedTicketJson) {
         try {
-          const parsed = JSON.parse(savedTicketJson);[cite: 2]
-          myTickets = Array.isArray(parsed) ? parsed : [parsed];[cite: 2]
+          const parsed = JSON.parse(savedTicketJson);[cite: 1, 2]
+          myTickets = Array.isArray(parsed) ? parsed : [parsed];[cite: 1, 2]
         } catch(e){}
       }
     }
 
-    if (myTickets.length === 0) return;[cite: 2]
+    if (myTickets.length === 0) return;[cite: 1, 2]
 
-    const nameElem = document.getElementById('mVisitorName');[cite: 2]
+    const nameElem = document.getElementById('mVisitorName');[cite: 1, 2]
     if (myTickets[0].isPublic) {
       nameElem.innerText = `Общественный защитник: ${myTickets[0].name}`;
-      nameElem.style.display = 'block';[cite: 2]
+      nameElem.style.display = 'block';[cite: 1, 2]
     } else {
-      nameElem.style.display = 'none';[cite: 2]
+      nameElem.style.display = 'none';[cite: 1, 2]
     }
 
-    const container = document.getElementById('mTicketsContainer');[cite: 2]
+    const container = document.getElementById('mTicketsContainer');[cite: 1, 2]
     container.innerHTML = myTickets.map(t => `
       <div class="ticket-item">
         <div class="window-title">ОКОШКО №${Number(t.windowNum)}</div>
@@ -1049,10 +1079,10 @@
       </div>
     `).join('');
 
-    document.getElementById('modalOverlay').style.display = 'flex';[cite: 2]
+    document.getElementById('modalOverlay').style.display = 'flex';[cite: 1, 2]
   }
 
-  function closeModal(id) { document.getElementById(id).style.display = 'none'; }[cite: 2]
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }[cite: 1, 2]
 
   // Запуск PWA только на http/https
   if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
