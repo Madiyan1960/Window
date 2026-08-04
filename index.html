@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Электронная очередь СИЗО — Общая база</title>
 
-  <!-- Иконка без ошибок 404 -->
   <link rel="shortcut icon" href="#">
-
-  <!-- PWA Метатеги и Манифест -->
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#1a252f">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -124,6 +121,48 @@
       border-radius: 4px;
     }
 
+    .user-type-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .user-type-btn {
+      flex: 1;
+      padding: 8px 4px;
+      font-size: 12px;
+      font-weight: bold;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .user-type-btn.active {
+      background: #1a252f;
+      color: #fff;
+      border-color: #1a252f;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+      text-align: left;
+    }
+    .form-group label {
+      font-size: 11px;
+      font-weight: bold;
+      color: #334155;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
     .consent-group {
       display: flex;
       align-items: center;
@@ -153,16 +192,17 @@
       margin-bottom: 8px;
     }
 
-    .btn-group { display: flex; gap: 8px; }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
     .btn {
-      flex: 1; padding: 10px 6px; font-size: 13px; font-weight: bold;
+      flex: 1; min-width: 140px; padding: 10px 6px; font-size: 13px; font-weight: bold;
       border: none; border-radius: 6px; cursor: pointer; color: white;
       transition: background 0.2s, transform 0.1s, opacity 0.2s; touch-action: manipulation;
     }
     .btn:active { transform: scale(0.98); }
+    .btn-w1 { background-color: #e67e22; }
     .btn-w2 { background-color: #27ae60; }
     .btn-w3 { background-color: #2980b9; }
-    .btn:disabled { background-color: #cbd5e1; color: #94a3b8; cursor: not-allowed; transform: none; }
+    .btn-combo { background-color: #8e44ad; }
 
     .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 4px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
@@ -173,16 +213,16 @@
       margin-top: 8px; 
       padding-top: 6px; 
       border-top: 1px dashed #cbd5e1; 
-      display: none; 
+      display: flex; 
       justify-content: flex-end; 
     }
-    .btn-admin-reset { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
+    .btn-admin-reset { background: transparent; color: #7f8c8d; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
 
     .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
     
     .modal-ticket { 
       background: white; 
-      padding: 30px 20px; 
+      padding: 20px 15px; 
       border-radius: 0; 
       width: 100vw; 
       height: 100vh; 
@@ -194,18 +234,27 @@
       justify-content: center;
       align-items: center;
       border: 8px dashed #1a252f;
+      overflow-y: auto;
     }
     .modal-ticket h3 { margin: 0 0 10px 0; font-size: 24px; color: #555; letter-spacing: 2px; }
-    .modal-ticket .window-title { font-size: 32px; font-weight: 800; color: #1a252f; margin-top: 10px; }
+    .modal-ticket .visitor-name { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
+    .modal-ticket .ticket-item {
+      margin: 10px 0;
+      padding: 10px;
+      border-bottom: 2px dashed #ccc;
+      width: 100%;
+      max-width: 400px;
+    }
+    .modal-ticket .window-title { font-size: 24px; font-weight: 800; color: #1a252f; }
     .modal-ticket .number { 
-      font-size: 100px; 
+      font-size: 70px; 
       font-weight: 900; 
-      margin: 20px 0; 
+      margin: 10px 0; 
       color: #000; 
       line-height: 1; 
       letter-spacing: 2px;
     }
-    .modal-ticket .time-stamp { font-size: 18px; color: #666; margin-top: 15px; font-weight: bold; }
+    .modal-ticket .time-stamp { font-size: 14px; color: #666; font-weight: bold; }
 
     .modal-admin, .modal-policy { background: white; padding: 15px 12px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .modal-policy { text-align: left; max-height: 80vh; overflow-y: auto; }
@@ -242,7 +291,7 @@
       font-size: 12px;
     }
 
-    .btn-modal { margin-top: 15px; padding: 14px 28px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; font-size: 16px; }
+    .btn-modal { margin-top: 15px; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; font-size: 14px; }
     .btn-close { background: #7f8c8d; }
     .btn-print { background: #27ae60; margin-left: 10px; }
     .btn-primary { background: #3498db; width: 100%; }
@@ -253,8 +302,8 @@
       .card { padding: 10px; }
       .btn-group { flex-direction: column; gap: 6px; }
       .btn { width: 100%; padding: 12px 6px; }
-      .modal-ticket .number { font-size: 80px; }
-      .modal-ticket .window-title { font-size: 26px; }
+      .modal-ticket .number { font-size: 60px; }
+      .modal-ticket .window-title { font-size: 20px; }
       #mapContainer { height: 160px; }
     }
   </style>
@@ -285,6 +334,18 @@
       <div id="mapContainer"></div>
       <div id="locationCoords" class="location-details" style="display:none;"></div>
 
+      <!-- Выбор типа посетителя -->
+      <div class="user-type-selector">
+        <button id="typeCitizenBtn" class="user-type-btn active" type="button" onclick="switchUserType('citizen')">Обычный посетитель</button>
+        <button id="typePublicBtn" class="user-type-btn" type="button" onclick="switchUserType('public')">Общественный защитник</button>
+      </div>
+
+      <!-- Поле Имени -->
+      <div id="publicNameBlock" class="form-group" style="display: none;">
+        <label for="publicNameInput">Имя Общественного защитника (обязательно):</label>
+        <input type="text" id="publicNameInput" class="form-control" placeholder="Введите ваше имя" maxlength="50">
+      </div>
+
       <div class="consent-group">
         <input type="checkbox" id="consentCheckbox" onchange="toggleButtonsState()">
         <label for="consentCheckbox">
@@ -294,9 +355,16 @@
 
       <div id="consentWarningBox" class="consent-warning-box"></div>
 
-      <div class="btn-group">
-        <button id="btnW2" class="btn btn-w2" onclick="registerUser(2)" disabled>Встать в очередь (Окошко №2)</button>
-        <button id="btnW3" class="btn btn-w3" onclick="registerUser(3)" disabled>Встать в очередь (Окошко №3)</button>
+      <!-- Кнопки записи -->
+      <div id="citizenButtons" class="btn-group">
+        <button id="btnW2" class="btn btn-w2" type="button" onclick="registerUser([2])">Окошко №2 (Передача)</button>
+        <button id="btnW3" class="btn btn-w3" type="button" onclick="registerUser([3])">Окошко №3 (Передача)</button>
+      </div>
+
+      <div id="publicButtons" class="btn-group" style="display: none;">
+        <button id="btnW1W2" class="btn btn-combo" type="button" onclick="registerUser([1, 2])">В Окошко №1 и в Окошко №2</button>
+        <button id="btnW1W3" class="btn btn-combo" type="button" onclick="registerUser([1, 3])">В Окошко №1 и в Окошко №3</button>
+        <button id="btnW1" class="btn btn-w1" type="button" onclick="registerUser([1])">Только в Окошко №1</button>
       </div>
     </div>
   </div>
@@ -310,49 +378,48 @@
           <tr>
             <th>№ Талона</th>
             <th>Окно приема</th>
+            <th>Имя / Статус</th>
             <th>Время выдачи</th>
           </tr>
         </thead>
         <tbody id="queueTableBody">
-          <tr><td colspan="3" style="text-align:center; color:#888;">Загрузка общей базы...</td></tr>
+          <tr><td colspan="4" style="text-align:center; color:#888;">Загрузка общей базы...</td></tr>
         </tbody>
       </table>
     </div>
 
     <div id="adminPanelBlock" class="admin-panel">
-      <button class="btn-admin-reset" onclick="openAdminModal()">⚙️ Управление записью (Админ)</button>
+      <button class="btn-admin-reset" type="button" onclick="openAdminModal()">⚙️ Вход для администратора</button>
     </div>
   </div>
 </div>
 
-<!-- Модальное окно талона -->
+<!-- Модальные окна -->
 <div id="modalOverlay" class="modal-overlay">
   <div class="modal-ticket">
     <h3>ТАЛОН ОЧЕРЕДИ</h3>
-    <div id="mWindow" class="window-title"></div>
-    <div id="mNumber" class="number"></div>
-    <div id="mTime" class="time-stamp"></div>
-    <div style="margin-top: 25px;">
-      <button class="btn-modal btn-close" onclick="closeModal('modalOverlay')">Закрыть</button>
-      <button class="btn-modal btn-print" onclick="window.print()">Печать</button>
+    <div id="mVisitorName" class="visitor-name"></div>
+    <div id="mTicketsContainer"></div>
+    <div style="margin-top: 15px;">
+      <button class="btn-modal btn-close" type="button" onclick="closeModal('modalOverlay')">Закрыть</button>
+      <button class="btn-modal btn-print" type="button" onclick="window.print()">Печать</button>
     </div>
   </div>
 </div>
 
-<!-- Модальное окно Политики -->
 <div id="policyModalOverlay" class="modal-overlay">
   <div class="modal-policy">
     <h3>Правила записи и Согласие</h3>
     <p>Настоящим, оформляя запись в электронную очередь на передачу, Вы даете согласие на:</p>
     <p>1. Использование геопозиции вашего устройства для проверки присутствия возле здания СИЗО.</p>
     <p>2. Отображение вашего порядкового номера талона в общем списке очереди.</p>
+    <p>3. Ввод имени для категории «Общественные защитники» для отображения в списках приема.</p>
     <div style="text-align:center;">
-      <button class="btn-modal btn-close" onclick="closeModal('policyModalOverlay')">Понятно</button>
+      <button class="btn-modal btn-close" type="button" onclick="closeModal('policyModalOverlay')">Понятно</button>
     </div>
   </div>
 </div>
 
-<!-- Модальное окно Админа -->
 <div id="adminModalOverlay" class="modal-overlay">
   <div class="modal-admin">
     <h3>ПАНЕЛЬ АДМИНИСТРАТОРА</h3>
@@ -387,547 +454,610 @@
       </div>
     </div>
 
-    <button class="btn-modal btn-primary" onclick="submitSaveSettings()">💾 Сохранить настройки</button>
-    <button class="btn-modal btn-danger" onclick="submitAdminReset()">🗑️ Очистить всю очередь и архив</button>
-    <button class="btn-modal btn-close" style="width:100%; margin-top:6px;" onclick="closeModal('adminModalOverlay')">Закрыть</button>
+    <button class="btn-modal btn-primary" type="button" onclick="submitSaveSettings()">💾 Сохранить настройки</button>
+    <button class="btn-modal btn-danger" type="button" onclick="submitAdminReset()">🗑️ Очистить всю очередь и архив</button>
+    <button class="btn-modal btn-close" style="width:100%; margin-top:6px;" type="button" onclick="closeModal('adminModalOverlay')">Закрыть</button>
   </div>
 </div>
 
 <script>
-  const SIZO_LAT = 51.201117; 
-  const SIZO_LNG = 71.483657; 
+  const SIZO_LAT = 51.201117;[cite: 2]
+  const SIZO_LNG = 71.483657;[cite: 2]
   
-  let ALLOWED_RADIUS_METERS = 300; 
-  let workingHours = { start: "00:01", end: "23:59" };
-  let purgeTime = null; 
+  let ALLOWED_RADIUS_METERS = 300;[cite: 2]
+  let workingHours = { start: "00:01", end: "23:59" };[cite: 2]
+  let purgeTime = null;[cite: 2]
+  let currentUserType = 'citizen';[cite: 2]
+  let lastSubmitTime = 0;
 
   const firebaseConfig = { 
-    apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI", 
-    authDomain: "window-54e93.firebaseapp.com", 
-    databaseURL: "https://window-54e93-default-rtdb.europe-west1.firebasedatabase.app", 
-    projectId: "window-54e93", 
-    storageBucket: "window-54e93.firebasestorage.app", 
-    messagingSenderId: "214954614953", 
-    appId: "1:214954614953:web:7832b8368aea4fa19a09b8", 
-    measurementId: "G-HX2G4YJW6C" 
+    apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI",[cite: 2]
+    authDomain: "window-54e93.firebaseapp.com",[cite: 2]
+    databaseURL: "https://window-54e93-default-rtdb.europe-west1.firebasedatabase.app",[cite: 2]
+    projectId: "window-54e93",[cite: 2]
+    storageBucket: "window-54e93.firebasestorage.app",[cite: 2]
+    messagingSenderId: "214954614953",[cite: 2]
+    appId: "1:214954614953:web:7832b8368aea4fa19a09b8",[cite: 2]
+    measurementId: "G-HX2G4YJW6C"[cite: 2]
   };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const auth = firebase.auth();
+  firebase.initializeApp(firebaseConfig);[cite: 2]
+  const db = firebase.database();[cite: 2]
+  const auth = firebase.auth();[cite: 2]
 
-  let queueItems = [];
-  let isUserLocationValid = false;
-  let ymapsMap = null;
-  let sizocircle = null;
+  let queueItems = [];[cite: 2]
+  let isUserLocationValid = false;[cite: 2]
+  let ymapsMap = null;[cite: 2]
+  let sizocircle = null;[cite: 2]
+  let userPlacemark = null;
+  let isQueueLoaded = false;[cite: 2]
 
-  // НОВЫЙ ФЛАГ для защиты от фантомных талонов
-  let isQueueLoaded = false;
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
-  let tapCount = 0;
-  let lastTapTime = 0;
-
-  document.body.addEventListener('click', (e) => {
-    if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy')) {
-      return;
+  function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = "; expires=" + date.toUTCString();
     }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
+  }
 
-    const currentTime = new Date().getTime();
-    const tapLength = currentTime - lastTapTime;
-
-    if (tapLength < 500 && tapLength > 0) {
-      tapCount++;
-    } else {
-      tapCount = 1;
+  function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
     }
-    lastTapTime = currentTime;
-
-    if (tapCount === 4) {
-      const adminBlock = document.getElementById('adminPanelBlock');
-      if (adminBlock) {
-        adminBlock.style.display = 'flex';
-        adminBlock.scrollIntoView({ behavior: 'smooth' });
-      }
-      tapCount = 0;
-    }
-  });
+    return null;
+  }
 
   function getDeviceId() {
-    let devId = localStorage.getItem('sizo_device_id');
+    let devId = localStorage.getItem('sizo_device_id') || getCookie('sizo_device_id');
     if (!devId) {
       devId = 'dev_' + Math.random().toString(36).substr(2, 9) + Date.now();
-      localStorage.setItem('sizo_device_id', devId);
     }
+    localStorage.setItem('sizo_device_id', devId);
+    setCookie('sizo_device_id', devId, 365);
     return devId;
   }
   const clientId = getDeviceId();
 
+  function switchUserType(type) {
+    currentUserType = type;[cite: 2]
+    const citizenBtn = document.getElementById('typeCitizenBtn');[cite: 2]
+    const publicBtn = document.getElementById('typePublicBtn');[cite: 2]
+    const citizenBtnsBlock = document.getElementById('citizenButtons');[cite: 2]
+    const publicBtnsBlock = document.getElementById('publicButtons');[cite: 2]
+    const publicNameBlock = document.getElementById('publicNameBlock');[cite: 2]
+
+    if (type === 'citizen') {
+      citizenBtn.classList.add('active');[cite: 2]
+      publicBtn.classList.remove('active');[cite: 2]
+      citizenBtnsBlock.style.display = 'flex';[cite: 2]
+      publicBtnsBlock.style.display = 'none';[cite: 2]
+      publicNameBlock.style.display = 'none';[cite: 2]
+    } else {
+      publicBtn.classList.add('active');[cite: 2]
+      citizenBtn.classList.remove('active');[cite: 2]
+      citizenBtnsBlock.style.display = 'none';[cite: 2]
+      publicBtnsBlock.style.display = 'flex';[cite: 2]
+      publicNameBlock.style.display = 'block';[cite: 2]
+    }
+    toggleButtonsState();
+  }
+
   function getTodayString() {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const d = new Date();[cite: 2]
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;[cite: 2]
   }
 
   function getFormattedTodayDate() {
-    const d = new Date();
-    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+    const d = new Date();[cite: 2]
+    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;[cite: 2]
   }
 
-  let todayStr = getTodayString();
-  let queueRef = db.ref('queues/' + todayStr);
-  const settingsTimeRef = db.ref('settings/workingHours');
-  const settingsRadiusRef = db.ref('settings/radius');
-  const settingsPurgeRef = db.ref('settings/purgeTime');
+  let todayStr = getTodayString();[cite: 2]
+  let queueRef = db.ref('queues/' + todayStr);[cite: 2]
+  const settingsTimeRef = db.ref('settings/workingHours');[cite: 2]
+  const settingsRadiusRef = db.ref('settings/radius');[cite: 2]
+  const settingsPurgeRef = db.ref('settings/purgeTime');[cite: 2]
 
   function updateTableHeaderTitle() {
-    document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;
+    document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;[cite: 2]
   }
-  updateTableHeaderTitle();
+  updateTableHeaderTitle();[cite: 2]
 
   function checkAutoPurgeTime() {
-    if (!purgeTime) return;
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const purgeMinutes = timeToMinutes(purgeTime);
+    if (!purgeTime) return;[cite: 2]
+    const now = new Date();[cite: 2]
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();[cite: 2]
+    const purgeMinutes = timeToMinutes(purgeTime);[cite: 2]
 
     if (currentMinutes >= purgeMinutes && queueItems.length > 0) {
       queueRef.remove().then(() => {
-        console.log(`Очередь автоматически очищена при наступлении ${purgeTime}`);
-        localStorage.removeItem('sizo_ticket_obj_' + todayStr);
-      }).catch(err => console.error("Ошибка автоочистки:", err));
+        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 2]
+      }).catch(err => console.error("Ошибка автоочистки:", err));[cite: 2]
     }
   }
 
   function attachQueueListener() {
     queueRef.on('value', (snapshot) => {
-      isQueueLoaded = true; // СИГНАЛ: база Firebase загрузилась!
-      const data = snapshot.val();
-      queueItems = [];
+      isQueueLoaded = true;[cite: 2]
+      const data = snapshot.val();[cite: 2]
+      queueItems = [];[cite: 2]
       if (data) {
-        Object.keys(data).forEach(key => { queueItems.push(data[key]); });
+        Object.keys(data).forEach(key => { queueItems.push(data[key]); });[cite: 2]
       }
       
-      // ИСПРАВЛЕНИЕ "ФАНТОМНОГО ТАЛОНА":
-      // Если база загружена, но нашего талона там больше нет — стираем его из браузера
-      const stillExists = queueItems.find(item => item.uid === clientId);
+      const stillExists = queueItems.find(item => item.uid === clientId);[cite: 2]
       if (!stillExists) {
-        localStorage.removeItem('sizo_ticket_obj_' + todayStr);
+        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 2]
       }
 
-      renderTable();
-      checkDeviceRegistration();
-      checkAutoPurgeTime();
+      renderTable();[cite: 2]
+      checkDeviceRegistration();[cite: 2]
+      checkAutoPurgeTime();[cite: 2]
     });
   }
-  attachQueueListener();
+  attachQueueListener();[cite: 2]
 
   setInterval(() => {
-    const currentDay = getTodayString();
+    const currentDay = getTodayString();[cite: 2]
     if (currentDay !== todayStr) {
-      localStorage.removeItem('sizo_ticket_obj_' + todayStr);
-      todayStr = currentDay;
-      isQueueLoaded = false; // Сбрасываем флаг при смене дня
-      queueRef.off();
-      queueItems = [];
-      renderTable();
-      queueRef = db.ref('queues/' + todayStr);
-      attachQueueListener();
-      updateTableHeaderTitle();
+      localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 2]
+      todayStr = currentDay;[cite: 2]
+      isQueueLoaded = false;[cite: 2]
+      queueRef.off();[cite: 2]
+      queueItems = [];[cite: 2]
+      renderTable();[cite: 2]
+      queueRef = db.ref('queues/' + todayStr);[cite: 2]
+      attachQueueListener();[cite: 2]
+      updateTableHeaderTitle();[cite: 2]
     } else {
-      checkAutoPurgeTime();
+      checkAutoPurgeTime();[cite: 2]
     }
-  }, 5000);
+  }, 5000);[cite: 2]
 
   settingsTimeRef.on('value', (snapshot) => {
-    const val = snapshot.val();
+    const val = snapshot.val();[cite: 2]
     if (val && val.start && val.end) {
-      workingHours = val;
-      document.getElementById('startTimeInput').value = val.start;
-      document.getElementById('endTimeInput').value = val.end;
+      workingHours = val;[cite: 2]
+      document.getElementById('startTimeInput').value = val.start;[cite: 2]
+      document.getElementById('endTimeInput').value = val.end;[cite: 2]
     }
-    checkDeviceRegistration();
+    checkDeviceRegistration();[cite: 2]
   });
 
   settingsRadiusRef.on('value', (snapshot) => {
-    const val = snapshot.val();
+    const val = snapshot.val();[cite: 2]
     if (val && !isNaN(val)) {
-      ALLOWED_RADIUS_METERS = parseInt(val, 10);
-      document.getElementById('radiusInput').value = ALLOWED_RADIUS_METERS;
+      ALLOWED_RADIUS_METERS = parseInt(val, 10);[cite: 2]
+      document.getElementById('radiusInput').value = ALLOWED_RADIUS_METERS;[cite: 2]
       
       if (sizocircle && typeof ymaps !== 'undefined') {
-        sizocircle.geometry.setRadius(ALLOWED_RADIUS_METERS);
-        sizocircle.properties.set('balloonContent', `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`);
+        sizocircle.geometry.setRadius(ALLOWED_RADIUS_METERS);[cite: 2]
+        sizocircle.properties.set('balloonContent', `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`);[cite: 2]
       }
-      
-      verifyUserLocation();
     }
   });
 
   settingsPurgeRef.on('value', (snapshot) => {
-    const val = snapshot.val();
+    const val = snapshot.val();[cite: 2]
     if (val) {
-      purgeTime = val;
-      document.getElementById('purgeTimeInput').value = val;
-      checkAutoPurgeTime();
+      purgeTime = val;[cite: 2]
+      document.getElementById('purgeTimeInput').value = val;[cite: 2]
+      checkAutoPurgeTime();[cite: 2]
     }
   });
 
   function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371e3;
-    const φ1 = lat1 * Math.PI / 180;
-    const φ2 = lat2 * Math.PI / 180;
-    const Δφ = (lat2 - lat1) * Math.PI / 180;
-    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const R = 6371e3;[cite: 2]
+    const φ1 = lat1 * Math.PI / 180;[cite: 2]
+    const φ2 = lat2 * Math.PI / 180;[cite: 2]
+    const Δφ = (lat2 - lat1) * Math.PI / 180;[cite: 2]
+    const Δλ = (lon2 - lon1) * Math.PI / 180;[cite: 2]
 
     const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
               Math.cos(φ1) * Math.cos(φ2) *
-              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);[cite: 2]
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));[cite: 2]
 
-    return R * c;
+    return R * c;[cite: 2]
   }
 
-  function verifyUserLocation() {
-    const geoStatus = document.getElementById('geoStatus');
-    const mapBox = document.getElementById('mapContainer');
-    const coordsBox = document.getElementById('locationCoords');
+  function handlePositionSuccess(position) {
+    const geoStatus = document.getElementById('geoStatus');[cite: 2]
+    const mapBox = document.getElementById('mapContainer');[cite: 2]
+    const coordsBox = document.getElementById('locationCoords');[cite: 2]
 
+    const userLat = position.coords.latitude;[cite: 2]
+    const userLng = position.coords.longitude;[cite: 2]
+    const accuracy = position.coords.accuracy;[cite: 2]
+
+    const distance = calculateDistance(userLat, userLng, SIZO_LAT, SIZO_LNG);[cite: 2]
+
+    coordsBox.style.display = 'block';[cite: 2]
+    coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;[cite: 2]
+
+    if (typeof ymaps !== 'undefined' && ymaps.Map) {
+      mapBox.style.display = 'block';[cite: 2]
+      ymaps.ready(() => {
+        if (!ymapsMap) {
+          try {
+            ymapsMap = new ymaps.Map("mapContainer", {
+              center: [SIZO_LAT, SIZO_LNG],[cite: 2]
+              zoom: 16,[cite: 2]
+              controls: ['zoomControl', 'fullscreenControl'][cite: 2]
+            });
+
+            const sizoplacemark = new ymaps.Placemark([SIZO_LAT, SIZO_LNG], {[cite: 2]
+              balloonContent: '<b>Здание СИЗО (КПП)</b>'[cite: 2]
+            }, { preset: 'islands#redDotIcon' });[cite: 2]
+
+            sizocircle = new ymaps.Circle([[cite: 2]
+              [SIZO_LAT, SIZO_LNG],[cite: 2]
+              ALLOWED_RADIUS_METERS[cite: 2]
+            ], {
+              balloonContent: `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`[cite: 2]
+            }, {
+              fillColor: "#FF000022",[cite: 2]
+              strokeColor: "#FF0000",[cite: 2]
+              strokeOpacity: 0.8,[cite: 2]
+              strokeWidth: 2[cite: 2]
+            });
+
+            // Метка человечка с подписью "Я"
+            userPlacemark = new ymaps.Placemark([userLat, userLng], {
+              iconContent: 'Я',
+              balloonContent: '<b>Вы находитесь здесь</b>'
+            }, { preset: 'islands#blueUserIcon' });
+
+            ymapsMap.geoObjects.add(sizocircle);[cite: 2]
+            ymapsMap.geoObjects.add(sizoplacemark);[cite: 2]
+            ymapsMap.geoObjects.add(userPlacemark);
+
+            ymapsMap.setBounds(ymapsMap.geoObjects.getBounds(), {
+              checkZoomRange: true,
+              zoomMargin: 30
+            });
+          } catch(e) {}
+        } else {
+          if (userPlacemark) {
+            userPlacemark.geometry.setCoordinates([userLat, userLng]);
+          } else {
+            userPlacemark = new ymaps.Placemark([userLat, userLng], {
+              iconContent: 'Я',
+              balloonContent: '<b>Вы находитесь здесь</b>'
+            }, { preset: 'islands#blueUserIcon' });
+            ymapsMap.geoObjects.add(userPlacemark);
+          }
+        }
+      });
+    }
+
+    if (distance <= ALLOWED_RADIUS_METERS) {
+      geoStatus.className = "geo-status-box geo-success";[cite: 2]
+      geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;[cite: 2]
+      isUserLocationValid = true;[cite: 2]
+    } else {
+      geoStatus.className = "geo-status-box geo-error";[cite: 2]
+      geoStatus.innerText = `⛔ Запись возможна только в районе разрешения! Вы в ${Math.round(distance)} м от СИЗО (допустимо: ${ALLOWED_RADIUS_METERS} м).`;[cite: 2]
+      isUserLocationValid = false;[cite: 2]
+    }
+    toggleButtonsState();[cite: 2]
+  }
+
+  function handlePositionError(error) {
+    const geoStatus = document.getElementById('geoStatus');[cite: 2]
+    geoStatus.className = "geo-status-box geo-error";[cite: 2]
+    geoStatus.innerText = "⚠️ Разрешите доступ к геопозиции (GPS) в настройках браузера.";[cite: 2]
+    isUserLocationValid = false;[cite: 2]
+    toggleButtonsState();[cite: 2]
+  }
+
+  function initGeoTracking() {
     if (!navigator.geolocation) {
-      geoStatus.className = "geo-status-box geo-error";
-      geoStatus.innerText = "❌ Геопозиционирование не поддерживается браузером.";
-      isUserLocationValid = false;
-      toggleButtonsState();
+      handlePositionError();
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const userLat = position.coords.latitude;
-        const userLng = position.coords.longitude;
-        const accuracy = position.coords.accuracy;
-        const distance = calculateDistance(userLat, userLng, SIZO_LAT, SIZO_LNG);
-
-        coordsBox.style.display = 'block';
-        coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
-
-        if (typeof ymaps !== 'undefined' && ymaps.Map) {
-          mapBox.style.display = 'block';
-          ymaps.ready(() => {
-            if (!ymapsMap) {
-              try {
-                ymapsMap = new ymaps.Map("mapContainer", {
-                  center: [SIZO_LAT, SIZO_LNG],
-                  zoom: 16,
-                  controls: ['zoomControl', 'fullscreenControl']
-                });
-
-                const sizoplacemark = new ymaps.Placemark([SIZO_LAT, SIZO_LNG], {
-                  balloonContent: '<b>Здание СИЗО (КПП)</b>'
-                }, { preset: 'islands#redDotIcon' });
-
-                sizocircle = new ymaps.Circle([
-                  [SIZO_LAT, SIZO_LNG],
-                  ALLOWED_RADIUS_METERS
-                ], {
-                  balloonContent: `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`
-                }, {
-                  fillColor: "#FF000022",
-                  strokeColor: "#FF0000",
-                  strokeOpacity: 0.8,
-                  strokeWidth: 2
-                });
-
-                const userPlacemark = new ymaps.Placemark([userLat, userLng], {
-                  balloonContent: '<b>Вы находитесь здесь</b>'
-                }, { preset: 'islands#blueCircleDotIcon' });
-
-                ymapsMap.geoObjects.add(sizocircle);
-                ymapsMap.geoObjects.add(sizoplacemark);
-                ymapsMap.geoObjects.add(userPlacemark);
-
-                ymapsMap.setBounds(ymapsMap.geoObjects.getBounds(), {
-                  checkZoomRange: true,
-                  zoomMargin: 30
-                });
-              } catch(e) {
-                console.warn("Карта недоступна, проверка идет по GPS", e);
-              }
-            }
-          });
-        } else {
-          mapBox.style.display = 'none';
-        }
-
-        if (distance <= ALLOWED_RADIUS_METERS) {
-          geoStatus.className = "geo-status-box geo-success";
-          geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;
-          isUserLocationValid = true;
-        } else {
-          geoStatus.className = "geo-status-box geo-error";
-          geoStatus.innerText = `⛔ Запись возможна только в районе разрешения! Вы в ${Math.round(distance)} м от СИЗО (допустимо: ${ALLOWED_RADIUS_METERS} м).`;
-          isUserLocationValid = false;
-        }
-        toggleButtonsState();
-      },
-      (error) => {
-        geoStatus.className = "geo-status-box geo-error";
-        geoStatus.innerText = "⚠️ Разрешите доступ к геопозиции (GPS) в настройках браузера.";
-        isUserLocationValid = false;
-        toggleButtonsState();
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+    navigator.geolocation.getCurrentPosition(handlePositionSuccess, handlePositionError, { enableHighAccuracy: true, timeout: 5000 });
+    navigator.geolocation.watchPosition(handlePositionSuccess, handlePositionError, { enableHighAccuracy: true, maximumAge: 5000 });
   }
 
-  verifyUserLocation();
+  initGeoTracking();
 
   function timeToMinutes(timeStr) {
-    if (!timeStr) return 0;
-    const parts = timeStr.split(':');
-    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    if (!timeStr) return 0;[cite: 2]
+    const parts = timeStr.split(':');[cite: 2]
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);[cite: 2]
   }
 
   function isWorkingHours() {
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const now = new Date();[cite: 2]
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();[cite: 2]
+    const startMin = timeToMinutes(workingHours.start);[cite: 2]
+    const endMin = timeToMinutes(workingHours.end);[cite: 2]
 
-    const startMin = timeToMinutes(workingHours.start);
-    const endMin = timeToMinutes(workingHours.end);
-
-    return currentMinutes >= startMin && currentMinutes <= endMin;
+    return currentMinutes >= startMin && currentMinutes <= endMin;[cite: 2]
   }
 
-  setInterval(() => { checkDeviceRegistration(); }, 60000);
-
   function toggleButtonsState() {
-    const isChecked = document.getElementById('consentCheckbox').checked;
+    const isChecked = document.getElementById('consentCheckbox').checked;[cite: 2]
     
-    let existing = queueItems.find(item => item.uid === clientId);
-    // Берем талон из локальной памяти ТОЛЬКО если база Firebase еще не ответила
+    let existing = queueItems.find(item => item.uid === clientId);[cite: 2]
     if (!existing && !isQueueLoaded) {
-      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 2]
       if (savedTicketJson) {
-        try { existing = JSON.parse(savedTicketJson); } catch(e){}
+        try { existing = JSON.parse(savedTicketJson); } catch(e){}[cite: 2]
       }
     }
 
-    const warningBox = document.getElementById('consentWarningBox');
-    const inTime = isWorkingHours();
-    const inGeo = isUserLocationValid;
+    const warningBox = document.getElementById('consentWarningBox');[cite: 2]
+    const inTime = isWorkingHours();[cite: 2]
+    const inGeo = isUserLocationValid;[cite: 2]
 
-    if (inTime && inGeo && isChecked && !existing) {
-      document.getElementById('btnW2').disabled = false;
-      document.getElementById('btnW3').disabled = false;
-      warningBox.style.display = 'none';
-    } else {
-      document.getElementById('btnW2').disabled = true;
-      document.getElementById('btnW3').disabled = true;
-
-      if (isChecked && !existing && (!inTime || !inGeo)) {
-        let reasons = [];
-        if (!inGeo) {
-          reasons.push(`📍 <strong>Геопозиция:</strong> Вы находитесь вне разрешенного радиуса (${ALLOWED_RADIUS_METERS} м) от СИЗО.`);
-        }
-        if (!inTime) {
-          reasons.push(`🕒 <strong>Время приема:</strong> Запись закрыта. График работы — с ${workingHours.start} до ${workingHours.end}.`);
-        }
-
-        warningBox.innerHTML = `
-          <strong>⛔ Встать в очередь невозможно:</strong>
-          <ul style="margin: 4px 0 0 0; padding-left: 16px;">
-            ${reasons.map(r => `<li style="margin-top: 2px;">${r}</li>`).join('')}
-          </ul>
-        `;
-        warningBox.style.display = 'block';
-      } else {
-        warningBox.style.display = 'none';
+    if (isChecked && !existing && (!inTime || !inGeo)) {
+      let reasons = [];[cite: 2]
+      if (!inGeo) {
+        reasons.push(`📍 <strong>Геопозиция:</strong> Вы находитесь вне разрешенного радиуса (${ALLOWED_RADIUS_METERS} м) от СИЗО.`);[cite: 2]
       }
+      if (!inTime) {
+        reasons.push(`🕒 <strong>Время приема:</strong> Запись закрыта. График работы — с ${workingHours.start} до ${workingHours.end}.`);[cite: 2]
+      }
+
+      warningBox.innerHTML = `
+        <strong>⛔ Встать в очередь невозможно:</strong>
+        <ul style="margin: 4px 0 0 0; padding-left: 16px;">
+          ${reasons.map(r => `<li style="margin-top: 2px;">${r}</li>`).join('')}
+        </ul>
+      `;[cite: 2]
+      warningBox.style.display = 'block';[cite: 2]
+    } else {
+      warningBox.style.display = 'none';[cite: 2]
     }
   }
 
   function checkDeviceRegistration() {
-    const btnW2 = document.getElementById('btnW2');
-    const btnW3 = document.getElementById('btnW3');
-    const alertBox = document.getElementById('alertBox');
-    const registrationBlock = document.getElementById('registrationBlock');
+    const alertBox = document.getElementById('alertBox');[cite: 2]
+    const registrationBlock = document.getElementById('registrationBlock');[cite: 2]
 
-    let existing = queueItems.find(item => item.uid === clientId);
+    let existingList = queueItems.filter(item => item.uid === clientId);[cite: 2]
 
-    // Берем талон из браузера ТОЛЬКО если база еще не загрузилась (спасет от моргания интерфейса)
-    if (!existing && !isQueueLoaded) {
-      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
+    if (existingList.length === 0 && !isQueueLoaded) {
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 2]
       if (savedTicketJson) {
         try {
-          existing = JSON.parse(savedTicketJson);
+          const parsed = JSON.parse(savedTicketJson);[cite: 2]
+          existingList = Array.isArray(parsed) ? parsed : [parsed];[cite: 2]
         } catch(e) {}
       }
     }
 
-    if (existing) {
-      if (btnW2) btnW2.disabled = true;
-      if (btnW3) btnW3.disabled = true;
-      if (registrationBlock) registrationBlock.style.display = 'none';
+    if (existingList.length > 0) {
+      if (registrationBlock) registrationBlock.style.display = 'none';[cite: 2]
       if (alertBox) {
-        alertBox.style.display = 'block';
+        alertBox.style.display = 'block';[cite: 2]
+        const codesStr = existingList.map(i => escapeHTML(i.code)).join(', ');
         alertBox.innerHTML = `
           <div class="alert-content">
-            <button class="btn-alert-ticket" onclick="showTicket('${existing.code}')">🎫 Мой талон</button>
-            <div>⚠️ Вы зарегистрированы под номером <strong>${existing.code}</strong>. Повторная запись заблокирована.</div>
-          </div>`;
+            <button class="btn-alert-ticket" type="button" onclick="showTicket()">🎫 Мои талоны</button>
+            <div>⚠️ Вы зарегистрированы под номером(-ами): <strong>${codesStr}</strong>. Повторная запись заблокирована.</div>
+          </div>`;[cite: 2]
       }
       return;
     }
 
     if (!isWorkingHours()) {
-      if (btnW2) btnW2.disabled = true;
-      if (btnW3) btnW3.disabled = true;
-      if (registrationBlock) registrationBlock.style.display = 'none';
+      if (registrationBlock) registrationBlock.style.display = 'none';[cite: 2]
       if (alertBox) {
-        alertBox.style.display = 'block';
-        alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает с ${workingHours.start} до ${workingHours.end}.`;
+        alertBox.style.display = 'block';[cite: 2]
+        alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает с ${workingHours.start} до ${workingHours.end}.`;[cite: 2]
       }
       return;
     }
 
-    if (registrationBlock) registrationBlock.style.display = 'block';
-    if (alertBox) alertBox.style.display = 'none';
-    toggleButtonsState();
+    if (registrationBlock) registrationBlock.style.display = 'block';[cite: 2]
+    if (alertBox) alertBox.style.display = 'none';[cite: 2]
+    toggleButtonsState();[cite: 2]
   }
 
-  function registerUser(windowNum) {
-    if (!isWorkingHours()) { alert(`Запись открыта только с ${workingHours.start} до ${workingHours.end}!`); return; }
-    if (!isUserLocationValid) { alert("Запись отклонена: занять очередь возможно только в районе радиуса действия разрешения СИЗО!"); return; }
+  function registerUser(windowsArray) {
+    const nowTime = Date.now();
+    if (nowTime - lastSubmitTime < 2000) {
+      return;
+    }
+    lastSubmitTime = nowTime;
 
-    const consentChecked = document.getElementById('consentCheckbox').checked;
-    if (!consentChecked) { alert("Подтвердите согласие с правилами!"); return; }
+    if (!isWorkingHours()) { 
+      alert(`Запись закрыта. Рабочий график: с ${workingHours.start} до ${workingHours.end}!`); 
+      return; 
+    }
+    if (!isUserLocationValid) { 
+      alert("Запись отклонена: занять очередь возможно только в разрешенном радиусе возле СИЗО (включите GPS)!"); 
+      return; 
+    }
 
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    const countInWindow = queueItems.filter(i => i.windowNum === windowNum).length + 1;
-    const code = `О${windowNum}-${String(countInWindow).padStart(3, '0')}`;
+    const consentChecked = document.getElementById('consentCheckbox').checked;[cite: 2]
+    if (!consentChecked) { 
+      alert("Подтвердите согласие с правилами записи!"); 
+      return; 
+    }
 
-    const newItem = {
-      code: code,
-      windowNum: windowNum,
-      uid: clientId,
-      time: timeStr,
-      timestamp: Date.now()
-    };
+    let publicName = "";[cite: 2]
+    if (currentUserType === 'public') {
+      publicName = escapeHTML(document.getElementById('publicNameInput').value.trim());
+      if (!publicName) {
+        alert("Пожалуйста, укажите ваше имя перед выбором очереди!");[cite: 2]
+        return;
+      }
+    }
 
-    localStorage.setItem('sizo_ticket_obj_' + todayStr, JSON.stringify(newItem));
+    const now = new Date();[cite: 2]
+    const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });[cite: 2]
+    const newItems = [];[cite: 2]
 
-    queueRef.push(newItem).then(() => {
-      showTicket(code);
-      checkDeviceRegistration();
-    }).catch(err => { alert("Ошибка записи: " + err.message); });
+    windowsArray.forEach(winNum => {
+      const countInWindow = queueItems.filter(i => i.windowNum === winNum).length + 1;[cite: 2]
+      const code = `О${winNum}-${String(countInWindow).padStart(3, '0')}`;[cite: 2]
+      
+      newItems.push({
+        code: code,[cite: 2]
+        windowNum: winNum,[cite: 2]
+        uid: clientId,[cite: 2]
+        time: timeStr,[cite: 2]
+        name: currentUserType === 'public' ? publicName : "Обычный посетитель",[cite: 2]
+        isPublic: currentUserType === 'public',[cite: 2]
+        timestamp: Date.now()[cite: 2]
+      });
+    });
+
+    localStorage.setItem('sizo_ticket_obj_' + todayStr, JSON.stringify(newItems));[cite: 2]
+
+    const promises = newItems.map(item => queueRef.push(item));[cite: 2]
+
+    Promise.all(promises).then(() => {
+      showTicket();[cite: 2]
+      checkDeviceRegistration();[cite: 2]
+    }).catch(err => { alert("Ошибка записи: " + err.message); });[cite: 2]
   }
 
   function renderTable() {
-    const tbody = document.getElementById('queueTableBody');
+    const tbody = document.getElementById('queueTableBody');[cite: 2]
     if (queueItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';[cite: 2]
       return;
     }
 
     const sorted = [...queueItems].sort((a, b) => {
-      if (a.windowNum !== b.windowNum) return a.windowNum - b.windowNum;
-      return a.code.localeCompare(b.code, undefined, { numeric: true, sensitivity: 'base' });
+      if (a.windowNum !== b.windowNum) return a.windowNum - b.windowNum;[cite: 2]
+      return a.code.localeCompare(b.code, undefined, { numeric: true, sensitivity: 'base' });[cite: 2]
     });
 
     tbody.innerHTML = sorted.map(item => `
       <tr>
-        <td><strong>${item.code}</strong></td>
-        <td>Окно №${item.windowNum}</td>
-        <td>${item.time}</td>
+        <td><strong>${escapeHTML(item.code)}</strong></td>
+        <td>Окно №${Number(item.windowNum)}</td>
+        <td>${item.isPublic ? `⚖️ <strong>${escapeHTML(item.name)}</strong> (Общ. защитник)` : '👤 Обычный посетитель'}</td>
+        <td>${escapeHTML(item.time)}</td>
       </tr>
     `).join('');
   }
 
-  function openPolicyModal() { document.getElementById('policyModalOverlay').style.display = 'flex'; }
-  function openAdminModal() { document.getElementById('adminModalOverlay').style.display = 'flex'; }
+  function openPolicyModal() { document.getElementById('policyModalOverlay').style.display = 'flex'; }[cite: 2]
+  function openAdminModal() { document.getElementById('adminModalOverlay').style.display = 'flex'; }[cite: 2]
 
-  function authenticateAdmin(email, password) {
-    if (auth.currentUser && auth.currentUser.email === email) {
-      return Promise.resolve();
+  async function submitSaveSettings() {
+    const email = document.getElementById('adminEmail').value.trim();[cite: 2]
+    const password = document.getElementById('adminPassword').value.trim();[cite: 2]
+    const startVal = document.getElementById('startTimeInput').value;[cite: 2]
+    const endVal = document.getElementById('endTimeInput').value;[cite: 2]
+    const purgeVal = document.getElementById('purgeTimeInput').value;[cite: 2]
+    const radiusVal = parseInt(document.getElementById('radiusInput').value, 10);[cite: 2]
+
+    if (!email || !password) { 
+      alert('Введите email и пароль администратора');[cite: 2]
+      return; 
     }
-    return auth.signInWithEmailAndPassword(email, password);
+    if (!startVal || !endVal || !purgeVal || isNaN(radiusVal)) {
+      alert('Заполните все поля корректно!');
+      return;
+    }
+
+    try {
+      await auth.signInWithEmailAndPassword(email, password);[cite: 2]
+      
+      await Promise.all([
+        settingsTimeRef.set({ start: startVal, end: endVal }),[cite: 2]
+        settingsPurgeRef.set(purgeVal),[cite: 2]
+        settingsRadiusRef.set(radiusVal)[cite: 2]
+      ]);
+
+      alert('Настройки успешно сохранены!');
+      closeModal('adminModalOverlay');[cite: 2]
+      await auth.signOut();[cite: 2]
+    } catch (error) {
+      alert('Ошибка: ' + error.message);
+    }
   }
 
-  function submitSaveSettings() {
-    const email = document.getElementById('adminEmail').value.trim();
-    const password = document.getElementById('adminPassword').value.trim();
-    const startVal = document.getElementById('startTimeInput').value;
-    const endVal = document.getElementById('endTimeInput').value;
-    const purgeVal = document.getElementById('purgeTimeInput').value;
-    const radiusVal = parseInt(document.getElementById('radiusInput').value, 10);
+  async function submitAdminReset() {
+    const email = document.getElementById('adminEmail').value.trim();[cite: 2]
+    const password = document.getElementById('adminPassword').value.trim();[cite: 2]
 
-    if (!email || !password) { alert('Введите email и пароль администратора'); return; }
-    if (!startVal || !endVal) { alert('Укажите время начала и окончания'); return; }
-    if (!purgeVal) { alert('Укажите время автоматической очистки очереди'); return; }
-    if (isNaN(radiusVal) || radiusVal <= 0) { alert('Укажите корректный радиус в метрах'); return; }
+    if (!email || !password) { 
+      alert('Введите email и пароль администратора');[cite: 2]
+      return; 
+    }
 
-    authenticateAdmin(email, password)
-      .then(() => {
-        return Promise.all([
-          settingsTimeRef.set({ start: startVal, end: endVal }),
-          settingsPurgeRef.set(purgeVal),
-          settingsRadiusRef.set(radiusVal)
-        ]);
-      })
-      .then(() => {
-        alert(`Настройки успешно сохранены!\nГрафик записи: с ${startVal} до ${endVal}\nОчистка списка: в ${purgeVal}\nРадиус: ${radiusVal} метров`);
-        closeModal('adminModalOverlay');
-        auth.signOut();
-      })
-      .catch((error) => { alert('Ошибка авторизации админа: ' + error.message); });
+    try {
+      await auth.signInWithEmailAndPassword(email, password);[cite: 2]
+
+      if (confirm('ВНИМАНИЕ! Вы действительно хотите очистить всю очередь И ВЕСЬ АРХИВ прошлых дней?')) {[cite: 2]
+        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 2]
+        await db.ref('queues').remove();[cite: 2]
+        alert('Вся очередь успешно очищена!');
+        closeModal('adminModalOverlay');[cite: 2]
+      }
+      await auth.signOut();[cite: 2]
+    } catch (error) {
+      alert('Ошибка: ' + error.message);
+    }
   }
 
-  function submitAdminReset() {
-    const email = document.getElementById('adminEmail').value.trim();
-    const password = document.getElementById('adminPassword').value.trim();
-
-    if (!email || !password) { alert('Введите email и пароль администратора'); return; }
-
-    authenticateAdmin(email, password)
-      .then(() => {
-        if (confirm('ВНИМАНИЕ! Вы действительно хотите очистить всю очередь И ВЕСЬ АРХИВ прошлых дней?')) {
-          localStorage.removeItem('sizo_ticket_obj_' + todayStr);
-          return db.ref('queues').remove().then(() => {
-            alert('Вся очередь и архив прошлых дней успешно очищены!');
-            closeModal('adminModalOverlay');
-            auth.signOut();
-          });
-        }
-      })
-      .catch((error) => { alert('Ошибка авторизации админа: ' + error.message); });
-  }
-
-  function showTicket(code) {
-    let item = queueItems.find(i => i.code === code);
+  function showTicket() {
+    let myTickets = queueItems.filter(i => i.uid === clientId);[cite: 2]
     
-    if (!item && !isQueueLoaded) {
-      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
+    if (myTickets.length === 0 && !isQueueLoaded) {
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 2]
       if (savedTicketJson) {
-        try { item = JSON.parse(savedTicketJson); } catch(e){}
+        try {
+          const parsed = JSON.parse(savedTicketJson);[cite: 2]
+          myTickets = Array.isArray(parsed) ? parsed : [parsed];[cite: 2]
+        } catch(e){}
       }
     }
 
-    if (!item) {
-      item = { code: code, windowNum: code.substring(1,2), time: 'Выдан' };
+    if (myTickets.length === 0) return;[cite: 2]
+
+    const nameElem = document.getElementById('mVisitorName');[cite: 2]
+    if (myTickets[0].isPublic) {
+      nameElem.innerText = `Общественный защитник: ${myTickets[0].name}`;
+      nameElem.style.display = 'block';[cite: 2]
+    } else {
+      nameElem.style.display = 'none';[cite: 2]
     }
 
-    document.getElementById('mWindow').innerText = `ОКОШКО №${item.windowNum}`;
-    document.getElementById('mNumber').innerText = item.code;
-    document.getElementById('mTime').innerText = `Выдан: ${item.time}`;
+    const container = document.getElementById('mTicketsContainer');[cite: 2]
+    container.innerHTML = myTickets.map(t => `
+      <div class="ticket-item">
+        <div class="window-title">ОКОШКО №${Number(t.windowNum)}</div>
+        <div class="number">${escapeHTML(t.code)}</div>
+        <div class="time-stamp">Выдан: ${escapeHTML(t.time)}</div>
+      </div>
+    `).join('');
 
-    document.getElementById('modalOverlay').style.display = 'flex';
+    document.getElementById('modalOverlay').style.display = 'flex';[cite: 2]
   }
 
-  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }[cite: 2]
 
-  if ('serviceWorker' in navigator) {
+  // Запуск PWA только на http/https
+  if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
-        .then((reg) => console.log('PWA Service Worker зарегистрирован:', reg.scope))
         .catch((err) => console.log('Ошибка регистрации PWA:', err));
     });
   }
