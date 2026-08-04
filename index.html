@@ -493,7 +493,7 @@
   let userPlacemark = null;
   let isQueueLoaded = false;
 
-  // Обработчик 4 быстрых кликов
+  // Обработчик 4 быстрых кликов по экрану
   let tapCount = 0;
   let lastTapTime = 0;
 
@@ -721,6 +721,17 @@
     coordsBox.style.display = 'block';
     coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
 
+    // Проверка попадания в зону
+    if (distance <= ALLOWED_RADIUS_METERS) {
+      geoStatus.className = "geo-status-box geo-success";
+      geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;
+      isUserLocationValid = true;
+    } else {
+      geoStatus.className = "geo-status-box geo-error";
+      geoStatus.innerText = `⛔ Вы вне зоны разрешения! Вы в ${Math.round(distance)} м от СИЗО (допустимо: ${ALLOWED_RADIUS_METERS} м).`;
+      isUserLocationValid = false;
+    }
+
     if (typeof ymaps !== 'undefined' && ymaps.Map) {
       mapBox.style.display = 'block';
       ymaps.ready(() => {
@@ -748,7 +759,6 @@
               strokeWidth: 2
             });
 
-            // Метка человечка с подписью "Я"
             userPlacemark = new ymaps.Placemark([userLat, userLng], {
               iconContent: 'Я',
               balloonContent: '<b>Вы находитесь здесь</b>'
@@ -777,15 +787,6 @@
       });
     }
 
-    if (distance <= ALLOWED_RADIUS_METERS) {
-      geoStatus.className = "geo-status-box geo-success";
-      geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;
-      isUserLocationValid = true;
-    } else {
-      geoStatus.className = "geo-status-box geo-error";
-      geoStatus.innerText = `⛔ Запись возможна только в районе разрешения! Вы в ${Math.round(distance)} м от СИЗО (допустимо: ${ALLOWED_RADIUS_METERS} м).`;
-      isUserLocationValid = false;
-    }
     toggleButtonsState();
   }
 
@@ -916,7 +917,7 @@
       return; 
     }
     if (!isUserLocationValid) { 
-      alert("Запись отклонена: занять очередь возможно только в разрешенном радиусе возле СИЗО (включите GPS)!"); 
+      alert("Запись отклонена: вы находитесь вне зоны разрешения СИЗО!"); 
       return; 
     }
 
