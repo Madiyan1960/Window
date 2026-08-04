@@ -204,16 +204,27 @@
     .btn-w3 { background-color: #2980b9; }
     .btn-combo { background-color: #8e44ad; }
 
-    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 4px; }
+    /* Прокручиваемый блок таблицы */
+    .table-responsive { 
+      width: 100%; 
+      max-height: 280px; 
+      overflow-y: auto; 
+      overflow-x: auto; 
+      -webkit-overflow-scrolling: touch; 
+      margin-top: 4px; 
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+    }
     table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
     th, td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
-    th { background-color: #f8f9fa; color: #4a5568; }
+    th { background-color: #f8f9fa; color: #4a5568; position: sticky; top: 0; z-index: 2; }
 
+    /* Панель администратора всегда видна */
     .admin-panel { 
       margin-top: 8px; 
       padding-top: 6px; 
       border-top: 1px dashed #cbd5e1; 
-      display: none; 
+      display: flex; 
       justify-content: flex-end; 
     }
     .btn-admin-reset { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
@@ -388,7 +399,7 @@
       </table>
     </div>
 
-    <!-- Скрытая панель администратора по умолчанию -->
+    <!-- Панель администратора -->
     <div id="adminPanelBlock" class="admin-panel">
       <button class="btn-admin-reset" type="button" onclick="openAdminModal()">⚙️ Управление записью (Админ)</button>
     </div>
@@ -492,35 +503,6 @@
   let sizocircle = null;
   let userPlacemark = null;
   let isQueueLoaded = false;
-
-  // Обработчик 4 быстрых кликов по экрану
-  let tapCount = 0;
-  let lastTapTime = 0;
-
-  document.body.addEventListener('click', (e) => {
-    if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy')) {
-      return;
-    }
-
-    const currentTime = new Date().getTime();
-    const tapLength = currentTime - lastTapTime;
-
-    if (tapLength < 500 && tapLength > 0) {
-      tapCount++;
-    } else {
-      tapCount = 1;
-    }
-    lastTapTime = currentTime;
-
-    if (tapCount === 4) {
-      const adminBlock = document.getElementById('adminPanelBlock');
-      if (adminBlock) {
-        adminBlock.style.display = 'flex';
-        adminBlock.scrollIntoView({ behavior: 'smooth' });
-      }
-      tapCount = 0;
-    }
-  });
 
   function escapeHTML(str) {
     if (!str) return '';
@@ -721,7 +703,6 @@
     coordsBox.style.display = 'block';
     coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
 
-    // Проверка попадания в зону
     if (distance <= ALLOWED_RADIUS_METERS) {
       geoStatus.className = "geo-status-box geo-success";
       geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;
