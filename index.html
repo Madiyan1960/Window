@@ -267,12 +267,12 @@
       font-weight: bold; 
     }
 
-    .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
+    .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
     
-    /* НА ВЕСЬ ЭКРАН ТЕЛЕФОНА */
+    /* ТАЛОН НА ВСЕХ ЭКРАНАХ С МАКСИМАЛЬНЫМ УВЕЛИЧЕНИЕМ НОМЕРА */
     .modal-ticket { 
       background: #ffffff; 
-      padding: 15px 10px; 
+      padding: 15px; 
       border-radius: 0; 
       width: 100vw; 
       height: 100vh; 
@@ -287,31 +287,31 @@
       overflow-y: auto;
     }
     .ticket-emblem {
-      width: 65px;
-      height: 65px;
+      width: 55px;
+      height: 55px;
       object-fit: contain;
-      margin-top: 5px;
+      margin-top: 2px;
     }
     .modal-ticket h3 { 
       margin: 2px 0; 
-      font-size: 16px; 
+      font-size: 14px; 
       color: #7f8c8d; 
-      letter-spacing: 3px; 
+      letter-spacing: 2px; 
       text-transform: uppercase;
       font-weight: 700;
     }
     .modal-ticket .visitor-name { 
-      font-size: 14px; 
+      font-size: 13px; 
       font-weight: bold; 
       color: #2c3e50; 
-      margin: 4px 0; 
+      margin: 2px 0; 
       background: #f1f5f9;
-      padding: 4px 12px;
+      padding: 3px 10px;
       border-radius: 20px;
     }
     .modal-ticket .ticket-item {
       margin: auto 0;
-      padding: 20px 10px;
+      padding: 10px 5px;
       background: #f8fafc;
       border: 3px dashed #cbd5e1;
       border-radius: 16px;
@@ -322,17 +322,17 @@
       justify-content: center;
     }
     .modal-ticket .window-title { 
-      font-size: 22px; 
+      font-size: 20px; 
       font-weight: 800; 
       color: #34495e; 
-      margin-bottom: 5px;
+      margin-bottom: 2px;
       text-transform: uppercase;
     }
-    /* СВЕРХКРУПНЫЙ НОМЕР ОЧЕРЕДИ БЕЗ НУЛЕЙ */
+    /* МАКСИМАЛЬНО УВЕЛИЧЕННЫЙ НОМЕР ОЧЕРЕДИ */
     .modal-ticket .number { 
-      font-size: 85px; 
+      font-size: 110px; 
       font-weight: 900; 
-      margin: 10px 0; 
+      margin: 5px 0; 
       color: #0f172a; 
       line-height: 1; 
       letter-spacing: 4px;
@@ -345,7 +345,7 @@
       font-size: 14px;
       color: #475569;
       font-weight: 700;
-      margin-top: 10px;
+      margin-top: 5px;
     }
 
     .modal-admin, .modal-policy, .modal-confirm, .modal-msg { background: white; padding: 15px 12px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
@@ -394,7 +394,7 @@
       .card { padding: 10px; }
       .btn-group { flex-direction: column; gap: 6px; }
       .btn { width: 100%; padding: 12px 6px; }
-      .modal-ticket .number { font-size: 75px; }
+      .modal-ticket .number { font-size: 95px; }
       #mapContainer { height: 140px; }
     }
   </style>
