@@ -43,7 +43,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      padding-bottom: 20px; /* Отступ снизу для комфортной прокрутки */
+      padding-bottom: 20px;
     }
     .card {
       background: white;
@@ -130,6 +130,7 @@
       border-radius: 4px;
     }
 
+    /* Переключатель категории с уникальными цветами */
     .user-type-selector {
       display: flex;
       gap: 8px;
@@ -140,17 +141,38 @@
       padding: 8px 4px;
       font-size: 12px;
       font-weight: bold;
-      border: 1px solid #cbd5e1;
-      background: #f8fafc;
-      color: #334155;
       border-radius: 6px;
       cursor: pointer;
       text-align: center;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
     }
-    .user-type-btn.active {
-      background: #1a252f;
-      color: #fff;
-      border-color: #1a252f;
+    /* Кнопка "Обычный посетитель" (Синий стиль) */
+    #typeCitizenBtn {
+      background: #f0f6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+    }
+    #typeCitizenBtn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #1d4ed8;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+    /* Кнопка "Общественный защитник" (Фиолетовый стиль) */
+    #typePublicBtn {
+      background: #faf5ff;
+      color: #7e22ce;
+      border: 1px solid #e9d5ff;
+    }
+    #typePublicBtn.active {
+      background: #7e22ce;
+      color: #ffffff;
+      border-color: #6b21a8;
+      box-shadow: 0 2px 4px rgba(126, 34, 206, 0.2);
     }
 
     .form-group {
@@ -213,7 +235,6 @@
     .btn-w3 { background-color: #2980b9; }
     .btn-combo { background-color: #8e44ad; }
 
-    /* Прокручиваемый блок таблицы очереди */
     .table-responsive { 
       width: 100%; 
       max-height: 200px; 
@@ -353,10 +374,14 @@
       <div id="mapContainer"></div>
       <div id="locationCoords" class="location-details" style="display:none;"></div>
 
-      <!-- Выбор типа посетителя -->
+      <!-- Выбор типа посетителя с иконками и разными цветами -->
       <div class="user-type-selector">
-        <button id="typeCitizenBtn" class="user-type-btn active" type="button" onclick="switchUserType('citizen')">Обычный посетитель</button>
-        <button id="typePublicBtn" class="user-type-btn" type="button" onclick="switchUserType('public')">Общественный защитник</button>
+        <button id="typeCitizenBtn" class="user-type-btn active" type="button" onclick="switchUserType('citizen')">
+          <span>👤</span> Обычный посетитель
+        </button>
+        <button id="typePublicBtn" class="user-type-btn" type="button" onclick="switchUserType('public')">
+          <span>⚖️</span> Общественный защитник
+        </button>
       </div>
 
       <!-- Поле Имени -->
