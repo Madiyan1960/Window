@@ -130,14 +130,24 @@
       border-radius: 4px;
     }
 
+    .section-label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #334155;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    /* Переключатель категории с уникальными цветами */
     .user-type-selector {
       display: flex;
-      gap: 8px;
+      flex-direction: column;
+      gap: 6px;
       margin-bottom: 10px;
     }
     .user-type-btn {
-      flex: 1;
-      padding: 8px 4px;
+      width: 100%;
+      padding: 10px 8px;
       font-size: 12px;
       font-weight: bold;
       border-radius: 6px;
@@ -147,8 +157,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 6px;
     }
+    /* Кнопка "Обычный посетитель" (Синий стиль) */
     #typeCitizenBtn {
       background: #f0f6ff;
       color: #2563eb;
@@ -160,6 +171,7 @@
       border-color: #1d4ed8;
       box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
     }
+    /* Кнопка "Общественный защитник" (Фиолетовый стиль) */
     #typePublicBtn {
       background: #faf5ff;
       color: #7e22ce;
@@ -232,6 +244,7 @@
     .btn-w3 { background-color: #2980b9; }
     .btn-combo { background-color: #8e44ad; }
 
+    /* Прокручиваемый блок таблицы очереди */
     .table-responsive { 
       width: 100%; 
       max-height: 200px; 
@@ -371,13 +384,15 @@
       <div id="mapContainer"></div>
       <div id="locationCoords" class="location-details" style="display:none;"></div>
 
+      <div class="section-label">Выберите тип посетителя</div>
+
       <!-- Выбор типа посетителя -->
       <div class="user-type-selector">
         <button id="typeCitizenBtn" class="user-type-btn" type="button" onclick="switchUserType('citizen')">
           <span>👤</span> Обычный посетитель
         </button>
         <button id="typePublicBtn" class="user-type-btn" type="button" onclick="switchUserType('public')">
-          <span>⚖️</span> Общественный защитник
+          <span>⚖️</span> Общественный защитник с правом выбора очереди для передачи
         </button>
       </div>
 
@@ -396,7 +411,7 @@
 
       <div id="consentWarningBox" class="consent-warning-box"></div>
 
-      <!-- Кнопки записи (скрыты до выбора типа посетителя) -->
+      <!-- Кнопки записи (скрыты по умолчанию до выбора категории) -->
       <div id="citizenButtons" class="btn-group" style="display: none;">
         <button id="btnW2" class="btn btn-w2" type="button" onclick="registerUser([2])">Окошко №2 (Передача)</button>
         <button id="btnW3" class="btn btn-w3" type="button" onclick="registerUser([3])">Окошко №3 (Передача)</button>
@@ -509,7 +524,7 @@
   let ALLOWED_RADIUS_METERS = 300;
   let workingHours = { start: "00:01", end: "23:59" };
   let purgeTime = null;
-  let currentUserType = null;
+  let currentUserType = null; // По умолчанию ни одна категория не выбрана
   let lastSubmitTime = 0;
 
   const firebaseConfig = { 
@@ -534,6 +549,7 @@
   let userPlacemark = null;
   let isQueueLoaded = false;
 
+  // Обработчик 4 быстрых кликов
   let tapCount = 0;
   let lastTapTime = 0;
 
