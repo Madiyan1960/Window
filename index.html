@@ -249,7 +249,6 @@
     th, td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
     th { background-color: #f8f9fa; color: #4a5568; position: sticky; top: 0; z-index: 2; }
 
-    /* Панель администратора скрыта по умолчанию */
     .admin-panel { 
       margin-top: 8px; 
       padding-top: 6px; 
@@ -270,10 +269,10 @@
 
     .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; padding: 10px; }
     
-    /* КРАСИВЫЙ И УКРУПНЕННЫЙ ТАЛОН */
+    /* СТИЛИ УЛУЧШЕННОГО ТАЛОНА */
     .modal-ticket { 
       background: #ffffff; 
-      padding: 25px 20px; 
+      padding: 20px 15px; 
       border-radius: 16px; 
       width: 100%; 
       max-width: 420px; 
@@ -286,52 +285,62 @@
       overflow-y: auto;
       max-height: 90vh;
     }
+    .ticket-emblem {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      margin-bottom: 4px;
+    }
     .modal-ticket h3 { 
       margin: 0 0 5px 0; 
-      font-size: 16px; 
+      font-size: 15px; 
       color: #7f8c8d; 
-      letter-spacing: 3px; 
+      letter-spacing: 2px; 
       text-transform: uppercase;
       font-weight: 700;
     }
     .modal-ticket .visitor-name { 
-      font-size: 14px; 
+      font-size: 13px; 
       font-weight: bold; 
       color: #2c3e50; 
-      margin-bottom: 12px; 
+      margin-bottom: 8px; 
       background: #f1f5f9;
-      padding: 4px 10px;
+      padding: 3px 8px;
       border-radius: 20px;
     }
     .modal-ticket .ticket-item {
-      margin: 8px 0;
-      padding: 16px 10px;
+      margin: 6px 0;
+      padding: 12px 10px;
       background: #f8fafc;
       border: 2px dashed #cbd5e1;
       border-radius: 12px;
       width: 100%;
     }
     .modal-ticket .window-title { 
-      font-size: 16px; 
+      font-size: 15px; 
       font-weight: 700; 
       color: #34495e; 
       margin-bottom: 4px;
       text-transform: uppercase;
     }
-    /* СУПЕР КРУПНЫЙ И ЧЕТКИЙ НОМЕР ТАЛОНА */
+    /* КРУПНЫЙ НОМЕР БЕЗ НУЛЕЙ */
     .modal-ticket .number { 
-      font-size: 64px; 
+      font-size: 60px; 
       font-weight: 900; 
-      margin: 8px 0; 
+      margin: 6px 0; 
       color: #0f172a; 
       line-height: 1; 
-      letter-spacing: 3px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+      letter-spacing: 2px;
     }
-    .modal-ticket .time-stamp { 
-      font-size: 13px; 
-      color: #64748b; 
-      font-weight: 600; 
+    .ticket-meta-info {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0 4px;
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+      margin-top: 2px;
     }
 
     .modal-admin, .modal-policy, .modal-confirm, .modal-msg { background: white; padding: 15px 12px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
@@ -380,7 +389,7 @@
       .card { padding: 10px; }
       .btn-group { flex-direction: column; gap: 6px; }
       .btn { width: 100%; padding: 12px 6px; }
-      .modal-ticket .number { font-size: 56px; }
+      .modal-ticket .number { font-size: 52px; }
       #mapContainer { height: 140px; }
     }
   </style>
@@ -398,7 +407,7 @@
     <div class="subtitle">Общая электронная система передач</div>
 
     <div class="geo-notice-info">
-      📍 <strong>Важно:</strong> Запись возможна строго в радиусе разрешения возле СИЗО.
+      📍 <strong>Важно:</strong> Запись возможна строго в радиусе разрешения возле СИЗО[cite: 1].
     </div>
 
     <div id="alertBox" class="alert-box"></div>
@@ -432,7 +441,7 @@
       <div class="consent-group">
         <input type="checkbox" id="consentCheckbox" onchange="toggleButtonsState()">
         <label for="consentCheckbox">
-          Я согласен с <a href="javascript:void(0)" onclick="openPolicyModal()">правилами записи</a> и получением талона.
+          Я согласен с <a href="javascript:void(0)" onclick="openPolicyModal()">правилами записи</a> и получением талона[cite: 1, 2].
         </label>
       </div>
 
@@ -479,6 +488,8 @@
 
 <div id="modalOverlay" class="modal-overlay">
   <div class="modal-ticket">
+    <!-- Герб СИЗО по центру сверху -->
+    <img src="https://cdn-icons-png.flaticon.com/512/3596/3596091.png" alt="Герб СИЗО" class="ticket-emblem">
     <h3>Электронный талон</h3>
     <div id="mVisitorName" class="visitor-name"></div>
     <div id="mTicketsContainer"></div>
@@ -1023,7 +1034,7 @@
         alertBox.innerHTML = `
           <div class="alert-content">
             <button class="btn-alert-ticket" type="button" onclick="showTicket()">🎫 Мои талоны</button>
-            <div>⚠️ Вы зарегистрированы под номером(-ами): <strong>${codesStr}</strong>. Повторная запись заблокирована.</div>
+            <div>⚠️ Вы зарегистрированы под номером(-ами): <strong>${codesStr}</strong>. Повторная запись заблокирована[cite: 1].</div>
           </div>`;
       }
       return;
@@ -1080,13 +1091,14 @@
 
     windowsArray.forEach(winNum => {
       const countInWindow = queueItems.filter(i => i.windowNum === winNum).length + 1;
-      const code = `О${winNum}-${String(countInWindow).padStart(3, '0')}`;
+      const code = `О${winNum}-${countInWindow}`;
       
       newItems.push({
         code: code,
         windowNum: winNum,
         uid: clientId,
         time: timeStr,
+        date: getFormattedTodayDate(),
         name: currentUserType === 'public' ? publicName : "Обычный посетитель",
         isPublic: currentUserType === 'public',
         timestamp: Date.now()
@@ -1227,13 +1239,19 @@
     }
 
     const container = document.getElementById('mTicketsContainer');
-    container.innerHTML = myTickets.map(t => `
-      <div class="ticket-item">
-        <div class="window-title">ОКОШКО №${Number(t.windowNum)}</div>
-        <div class="number">${escapeHTML(t.code)}</div>
-        <div class="time-stamp">Выдан в: ${escapeHTML(t.time)}</div>
-      </div>
-    `).join('');
+    container.innerHTML = myTickets.map(t => {
+      const ticketDate = t.date || getFormattedTodayDate();
+      return `
+        <div class="ticket-item">
+          <div class="window-title">ОКОШКО №${Number(t.windowNum)}</div>
+          <div class="number">${escapeHTML(t.code)}</div>
+          <div class="ticket-meta-info">
+            <span>Дата: ${escapeHTML(ticketDate)}</span>
+            <span>Время: ${escapeHTML(t.time)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     document.getElementById('modalOverlay').style.display = 'flex';
   }
