@@ -269,7 +269,7 @@
 
     .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
     
-    /* ТАЛОН НА ВСЕХ ЭКРАНАХ С МАКСИМАЛЬНЫМ УВЕЛИЧЕНИЕМ НОМЕРА */
+    /* ТАЛОН НА ВЕСЬ ЭКРАН С ВЫТЯНУТОЙ ЦИФРОЙ ОЧЕРЕДИ */
     .modal-ticket { 
       background: #ffffff; 
       padding: 15px; 
@@ -328,14 +328,16 @@
       margin-bottom: 2px;
       text-transform: uppercase;
     }
-    /* МАКСИМАЛЬНО УВЕЛИЧЕННЫЙ НОМЕР ОЧЕРЕДИ */
+    /* ВЫТЯНУТАЯ ВЫСОКАЯ ЦИФРА ОЧЕРЕДИ */
     .modal-ticket .number { 
       font-size: 110px; 
       font-weight: 900; 
       margin: 5px 0; 
       color: #0f172a; 
-      line-height: 1; 
+      line-height: 0.9; 
       letter-spacing: 4px;
+      transform: scaleY(1.35); /* Эффект вытягивания по вертикали */
+      display: inline-block;
     }
     .ticket-meta-info {
       display: flex;
@@ -345,7 +347,7 @@
       font-size: 14px;
       color: #475569;
       font-weight: 700;
-      margin-top: 5px;
+      margin-top: 15px; /* Компенсация отступа после transform */
     }
 
     .modal-admin, .modal-policy, .modal-confirm, .modal-msg { background: white; padding: 15px 12px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
@@ -446,21 +448,21 @@
       <div class="consent-group">
         <input type="checkbox" id="consentCheckbox" onchange="toggleButtonsState()">
         <label for="consentCheckbox">
-          Я согласен с <a href="javascript:void(0)" onclick="openPolicyModal()">правилами записи</a> и получением талона[cite: 1, 2].
+          Я согласен с <a href="javascript:void(0)" onclick="openPolicyModal()">правилами записи</a> и получением талона[cite: 1].
         </label>
       </div>
 
       <div id="consentWarningBox" class="consent-warning-box"></div>
 
       <div id="citizenButtons" class="btn-group" style="display: none;">
-        <button id="btnW2" class="btn btn-w2" type="button" onclick="registerUser([2])">Окошко №2 (Передача)</button>
-        <button id="btnW3" class="btn btn-w3" type="button" onclick="registerUser([3])">Окошко №3 (Передача)</button>
+        <button id="btnW2" class="btn btn-w2" type="button" onclick="registerUser([2])">Окно №2 (Передача)</button>
+        <button id="btnW3" class="btn btn-w3" type="button" onclick="registerUser([3])">Окно №3 (Передача)</button>
       </div>
 
       <div id="publicButtons" class="btn-group" style="display: none;">
-        <button id="btnW1W2" class="btn btn-combo" type="button" onclick="registerUser([1, 2])">В Окошко №1 и в Окошко №2</button>
-        <button id="btnW1W3" class="btn btn-combo" type="button" onclick="registerUser([1, 3])">В Окошко №1 и в Окошко №3</button>
-        <button id="btnW1" class="btn btn-w1" type="button" onclick="registerUser([1])">Только в Окошко №1</button>
+        <button id="btnW1W2" class="btn btn-combo" type="button" onclick="registerUser([1, 2])">В Окно №1 и в Окно №2</button>
+        <button id="btnW1W3" class="btn btn-combo" type="button" onclick="registerUser([1, 3])">В Окно №1 и в Окно №3</button>
+        <button id="btnW1" class="btn btn-w1" type="button" onclick="registerUser([1])">Только в Окно №1</button>
       </div>
     </div>
   </div>
@@ -1251,7 +1253,7 @@
       const ticketDate = t.date || getFormattedTodayDate();
       return `
         <div class="ticket-item">
-          <div class="window-title">ОКОШКО №${Number(t.windowNum)}</div>
+          <div class="window-title">ОКНО №${Number(t.windowNum)}</div>
           <div class="number">${escapeHTML(t.code)}</div>
           <div class="ticket-meta-info">
             <span>📅 ${escapeHTML(ticketDate)}</span>
