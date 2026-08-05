@@ -470,8 +470,8 @@
 
     <div id="adminLoginForm">
       <p style="font-size:11px; color:#666; margin-bottom:8px;">Авторизуйтесь для доступа к настройкам очереди</p>
-      <input type="email" id="adminEmail" class="admin-input" placeholder="Email администратора">
-      <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль администратора">
+      <input type="email" id="adminEmail" class="admin-input" placeholder="Email администратора" autocomplete="off">
+      <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль администратора" autocomplete="off">
       <button class="btn-modal btn-primary" style="width:100%; margin-top:8px;" type="button" onclick="submitAdminLogin()">🔑 Войти</button>
     </div>
 
@@ -564,8 +564,8 @@
   let isQueueLoaded = false;
 
   function showCustomMessage(text, title = "Уведомление") {
-    document.getElementById('msgModalTitle').innerText = title;
-    document.getElementById('msgModalText').innerText = text;
+    document.getElementById('msgModalTitle').innerText = title ? escapeHTML(title) : "Уведомление";
+    document.getElementById('msgModalText').innerText = escapeHTML(text);
     document.getElementById('messageModalOverlay').style.display = 'flex';
   }
 
@@ -815,7 +815,11 @@
     coordsBox.style.display = 'block';
     coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
 
-    if (distance <= ALLOWED_RADIUS_METERS) {
+    if (accuracy > ALLOWED_RADIUS_METERS * 2) {
+      geoStatus.className = "geo-status-box geo-error";
+      geoStatus.innerText = "⚠️ Точность GPS слишком низкая. Пожалуйста, выйдите на открытое пространство.";
+      isUserLocationValid = false;
+    } else if (distance <= ALLOWED_RADIUS_METERS) {
       geoStatus.className = "geo-status-box geo-success";
       geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;
       isUserLocationValid = true;
