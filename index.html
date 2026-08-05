@@ -532,418 +532,418 @@
 </div>
 
 <script>
-  const SIZO_LAT = 51.201117;
-  const SIZO_LNG = 71.483657;
+  const SIZO_LAT = 51.201117;[cite: 3]
+  const SIZO_LNG = 71.483657;[cite: 3]
   
-  let ALLOWED_RADIUS_METERS = 300;
-  let workingHours = { start: "00:01", end: "23:59" };
-  let purgeTime = null;
-  let currentUserType = null;
-  let lastSubmitTime = 0;
+  let ALLOWED_RADIUS_METERS = 300;[cite: 3]
+  let workingHours = { start: "00:01", end: "23:59" };[cite: 3]
+  let purgeTime = null;[cite: 3]
+  let currentUserType = null;[cite: 3]
+  let lastSubmitTime = 0;[cite: 3]
 
   const firebaseConfig = { 
-    apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI",
-    authDomain: "window-54e93.firebaseapp.com",
-    databaseURL: "https://window-54e93-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "window-54e93",
-    storageBucket: "window-54e93.firebasestorage.app",
-    messagingSenderId: "214954614953",
-    appId: "1:214954614953:web:7832b8368aea4fa19a09b8",
-    measurementId: "G-HX2G4YJW6C"
+    apiKey: "AIzaSyA8g9XoIQ7PK1aWVCFo3Vq-kWbwaq3TqtI",[cite: 3]
+    authDomain: "window-54e93.firebaseapp.com",[cite: 3]
+    databaseURL: "https://window-54e93-default-rtdb.europe-west1.firebasedatabase.app",[cite: 3]
+    projectId: "window-54e93",[cite: 3]
+    storageBucket: "window-54e93.firebasestorage.app",[cite: 3]
+    messagingSenderId: "214954614953",[cite: 3]
+    appId: "1:214954614953:web:7832b8368aea4fa19a09b8",[cite: 3]
+    measurementId: "G-HX2G4YJW6C"[cite: 3]
   };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const auth = firebase.auth();
+  firebase.initializeApp(firebaseConfig);[cite: 3]
+  const db = firebase.database();[cite: 3]
+  const auth = firebase.auth();[cite: 3]
 
-  let queueItems = [];
-  let isUserLocationValid = false;
-  let ymapsMap = null;
-  let sizocircle = null;
-  let userPlacemark = null;
-  let isQueueLoaded = false;
+  let queueItems = [];[cite: 3]
+  let isUserLocationValid = false;[cite: 3]
+  let ymapsMap = null;[cite: 3]
+  let sizocircle = null;[cite: 3]
+  let userPlacemark = null;[cite: 3]
+  let isQueueLoaded = false;[cite: 3]
 
   function showCustomMessage(text, title = "Уведомление") {
-    document.getElementById('msgModalTitle').innerText = title ? escapeHTML(title) : "Уведомление";
-    document.getElementById('msgModalText').innerText = escapeHTML(text);
-    document.getElementById('messageModalOverlay').style.display = 'flex';
+    document.getElementById('msgModalTitle').innerText = title ? escapeHTML(title) : "Уведомление";[cite: 3]
+    document.getElementById('msgModalText').innerText = escapeHTML(text);[cite: 3]
+    document.getElementById('messageModalOverlay').style.display = 'flex';[cite: 3]
   }
 
-  let tapCount = 0;
-  let lastTapTime = 0;
+  let tapCount = 0;[cite: 3]
+  let lastTapTime = 0;[cite: 3]
 
   document.body.addEventListener('click', (e) => {
     if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy') || e.target.closest('.modal-confirm') || e.target.closest('.modal-msg')) {
-      return;
+      return;[cite: 3]
     }
 
-    const currentTime = new Date().getTime();
-    const tapLength = currentTime - lastTapTime;
+    const currentTime = new Date().getTime();[cite: 3]
+    const tapLength = currentTime - lastTapTime;[cite: 3]
 
     if (tapLength < 500 && tapLength > 0) {
-      tapCount++;
+      tapCount++;[cite: 3]
     } else {
-      tapCount = 1;
+      tapCount = 1;[cite: 3]
     }
-    lastTapTime = currentTime;
+    lastTapTime = currentTime;[cite: 3]
 
     if (tapCount === 4) {
-      const adminBlock = document.getElementById('adminPanelBlock');
+      const adminBlock = document.getElementById('adminPanelBlock');[cite: 3]
       if (adminBlock) {
-        adminBlock.style.display = 'flex';
-        adminBlock.scrollIntoView({ behavior: 'smooth' });
+        adminBlock.style.display = 'flex';[cite: 3]
+        adminBlock.scrollIntoView({ behavior: 'smooth' });[cite: 3]
       }
-      tapCount = 0;
+      tapCount = 0;[cite: 3]
     }
   });
 
   function escapeHTML(str) {
-    if (!str) return '';
+    if (!str) return '';[cite: 3]
     return String(str)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
+      .replace/>/g, "&gt;")
       .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+      .replace(/'/g, "&#039;");[cite: 3]
   }
 
   function setCookie(name, value, days) {
-    let expires = "";
+    let expires = "";[cite: 3]
     if (days) {
-      const date = new Date();
-      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-      expires = "; expires=" + date.toUTCString();
+      const date = new Date();[cite: 3]
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));[cite: 3]
+      expires = "; expires=" + date.toUTCString();[cite: 3]
     }
-    document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
+    document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";[cite: 3]
   }
 
   function getCookie(name) {
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(';');
+    const nameEQ = name + "=";[cite: 3]
+    const ca = document.cookie.split(';');[cite: 3]
     for(let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+      let c = ca[i];[cite: 3]
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length);[cite: 3]
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);[cite: 3]
     }
-    return null;
+    return null;[cite: 3]
   }
 
   function getDeviceId() {
-    let devId = localStorage.getItem('sizo_device_id') || getCookie('sizo_device_id');
+    let devId = localStorage.getItem('sizo_device_id') || getCookie('sizo_device_id');[cite: 3]
     if (!devId) {
-      devId = 'dev_' + Math.random().toString(36).substr(2, 9) + Date.now();
+      devId = 'dev_' + Math.random().toString(36).substr(2, 9) + Date.now();[cite: 3]
     }
-    localStorage.setItem('sizo_device_id', devId);
-    setCookie('sizo_device_id', devId, 365);
-    return devId;
+    localStorage.setItem('sizo_device_id', devId);[cite: 3]
+    setCookie('sizo_device_id', devId, 365);[cite: 3]
+    return devId;[cite: 3]
   }
-  const clientId = getDeviceId();
+  const clientId = getDeviceId();[cite: 3]
 
   function handleTypeCheckbox(selectedType) {
-    const checkCitizen = document.getElementById('checkCitizen');
-    const checkPublic = document.getElementById('checkPublic');
+    const checkCitizen = document.getElementById('checkCitizen');[cite: 3]
+    const checkPublic = document.getElementById('checkPublic');[cite: 3]
 
     if (selectedType === 'citizen') {
       if (checkCitizen.checked) {
-        checkPublic.checked = false;
-        switchUserType('citizen');
+        checkPublic.checked = false;[cite: 3]
+        switchUserType('citizen');[cite: 3]
       } else {
-        switchUserType(null);
+        switchUserType(null);[cite: 3]
       }
     } else if (selectedType === 'public') {
       if (checkPublic.checked) {
-        checkCitizen.checked = false;
-        switchUserType('public');
+        checkCitizen.checked = false;[cite: 3]
+        switchUserType('public');[cite: 3]
       } else {
-        switchUserType(null);
+        switchUserType(null);[cite: 3]
       }
     }
   }
 
   function switchUserType(type) {
-    currentUserType = type;
-    const citizenBtnsBlock = document.getElementById('citizenButtons');
-    const publicBtnsBlock = document.getElementById('publicButtons');
-    const publicNameBlock = document.getElementById('publicNameBlock');
+    currentUserType = type;[cite: 3]
+    const citizenBtnsBlock = document.getElementById('citizenButtons');[cite: 3]
+    const publicBtnsBlock = document.getElementById('publicButtons');[cite: 3]
+    const publicNameBlock = document.getElementById('publicNameBlock');[cite: 3]
 
     if (type === 'citizen') {
-      citizenBtnsBlock.style.display = 'flex';
-      publicBtnsBlock.style.display = 'none';
-      publicNameBlock.style.display = 'none';
+      citizenBtnsBlock.style.display = 'flex';[cite: 3]
+      publicBtnsBlock.style.display = 'none';[cite: 3]
+      publicNameBlock.style.display = 'none';[cite: 3]
     } else if (type === 'public') {
-      citizenBtnsBlock.style.display = 'none';
-      publicBtnsBlock.style.display = 'flex';
-      publicNameBlock.style.display = 'block';
+      citizenBtnsBlock.style.display = 'none';[cite: 3]
+      publicBtnsBlock.style.display = 'flex';[cite: 3]
+      publicNameBlock.style.display = 'block';[cite: 3]
     } else {
-      citizenBtnsBlock.style.display = 'none';
-      publicBtnsBlock.style.display = 'none';
-      publicNameBlock.style.display = 'none';
+      citizenBtnsBlock.style.display = 'none';[cite: 3]
+      publicBtnsBlock.style.display = 'none';[cite: 3]
+      publicNameBlock.style.display = 'none';[cite: 3]
     }
-    toggleButtonsState();
+    toggleButtonsState();[cite: 3]
   }
 
   function getTodayString() {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const d = new Date();[cite: 3]
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;[cite: 3]
   }
 
   function getFormattedTodayDate() {
-    const d = new Date();
-    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+    const d = new Date();[cite: 3]
+    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;[cite: 3]
   }
 
-  let todayStr = getTodayString();
-  let queueRef = db.ref('queues/' + todayStr);
-  const settingsTimeRef = db.ref('settings/workingHours');
-  const settingsRadiusRef = db.ref('settings/radius');
-  const settingsPurgeRef = db.ref('settings/purgeTime');
+  let todayStr = getTodayString();[cite: 3]
+  let queueRef = db.ref('queues/' + todayStr);[cite: 3]
+  const settingsTimeRef = db.ref('settings/workingHours');[cite: 3]
+  const settingsRadiusRef = db.ref('settings/radius');[cite: 3]
+  const settingsPurgeRef = db.ref('settings/purgeTime');[cite: 3]
 
   function updateTableHeaderTitle() {
-    document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;
+    document.getElementById('tableHeaderTitle').innerText = `Общий список очереди на сегодня (${getFormattedTodayDate()})`;[cite: 3]
   }
-  updateTableHeaderTitle();
+  updateTableHeaderTitle();[cite: 3]
 
   function checkAutoPurgeTime() {
-    if (!purgeTime) return;
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const purgeMinutes = timeToMinutes(purgeTime);
+    if (!purgeTime) return;[cite: 3]
+    const now = new Date();[cite: 3]
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();[cite: 3]
+    const purgeMinutes = timeToMinutes(purgeTime);[cite: 3]
 
     if (currentMinutes >= purgeMinutes && queueItems.length > 0) {
       queueRef.remove().then(() => {
-        localStorage.removeItem('sizo_ticket_obj_' + todayStr);
-      }).catch(err => console.error("Ошибка автоочистки:", err));
+        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 3]
+      }).catch(err => console.error("Ошибка автоочистки:", err));[cite: 3]
     }
   }
 
   function attachQueueListener() {
     queueRef.on('value', (snapshot) => {
-      isQueueLoaded = true;
-      const data = snapshot.val();
-      queueItems = [];
+      isQueueLoaded = true;[cite: 3]
+      const data = snapshot.val();[cite: 3]
+      queueItems = [];[cite: 3]
       if (data) {
-        Object.keys(data).forEach(key => { queueItems.push(data[key]); });
+        Object.keys(data).forEach(key => { queueItems.push(data[key]); });[cite: 3]
       }
       
-      const stillExists = queueItems.find(item => item.uid === clientId);
+      const stillExists = queueItems.find(item => item.uid === clientId);[cite: 3]
       if (!stillExists) {
-        localStorage.removeItem('sizo_ticket_obj_' + todayStr);
+        localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 3]
       }
 
-      renderTable();
-      checkDeviceRegistration();
-      checkAutoPurgeTime();
+      renderTable();[cite: 3]
+      checkDeviceRegistration();[cite: 3]
+      checkAutoPurgeTime();[cite: 3]
     });
   }
-  attachQueueListener();
+  attachQueueListener();[cite: 3]
 
   setInterval(() => {
-    const currentDay = getTodayString();
+    const currentDay = getTodayString();[cite: 3]
     if (currentDay !== todayStr) {
-      localStorage.removeItem('sizo_ticket_obj_' + todayStr);
-      todayStr = currentDay;
-      isQueueLoaded = false;
-      queueRef.off();
-      queueItems = [];
-      renderTable();
-      queueRef = db.ref('queues/' + todayStr);
-      attachQueueListener();
-      updateTableHeaderTitle();
+      localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 3]
+      todayStr = currentDay;[cite: 3]
+      isQueueLoaded = false;[cite: 3]
+      queueRef.off();[cite: 3]
+      queueItems = [];[cite: 3]
+      renderTable();[cite: 3]
+      queueRef = db.ref('queues/' + todayStr);[cite: 3]
+      attachQueueListener();[cite: 3]
+      updateTableHeaderTitle();[cite: 3]
     } else {
-      checkAutoPurgeTime();
+      checkAutoPurgeTime();[cite: 3]
     }
-  }, 5000);
+  }, 5000);[cite: 3]
 
   settingsTimeRef.on('value', (snapshot) => {
-    const val = snapshot.val();
+    const val = snapshot.val();[cite: 3]
     if (val && val.start && val.end) {
-      workingHours = val;
-      document.getElementById('startTimeInput').value = val.start;
-      document.getElementById('endTimeInput').value = val.end;
+      workingHours = val;[cite: 3]
+      document.getElementById('startTimeInput').value = val.start;[cite: 3]
+      document.getElementById('endTimeInput').value = val.end;[cite: 3]
     }
-    checkDeviceRegistration();
+    checkDeviceRegistration();[cite: 3]
   });
 
   settingsRadiusRef.on('value', (snapshot) => {
-    const val = snapshot.val();
+    const val = snapshot.val();[cite: 3]
     if (val && !isNaN(val)) {
-      ALLOWED_RADIUS_METERS = parseInt(val, 10);
-      document.getElementById('radiusInput').value = ALLOWED_RADIUS_METERS;
+      ALLOWED_RADIUS_METERS = parseInt(val, 10);[cite: 3]
+      document.getElementById('radiusInput').value = ALLOWED_RADIUS_METERS;[cite: 3]
       
       if (sizocircle && typeof ymaps !== 'undefined') {
-        sizocircle.geometry.setRadius(ALLOWED_RADIUS_METERS);
-        sizocircle.properties.set('balloonContent', `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`);
+        sizocircle.geometry.setRadius(ALLOWED_RADIUS_METERS);[cite: 3]
+        sizocircle.properties.set('balloonContent', `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`);[cite: 3]
       }
     }
   });
 
   settingsPurgeRef.on('value', (snapshot) => {
-    const val = snapshot.val();
+    const val = snapshot.val();[cite: 3]
     if (val) {
-      purgeTime = val;
-      document.getElementById('purgeTimeInput').value = val;
-      checkAutoPurgeTime();
+      purgeTime = val;[cite: 3]
+      document.getElementById('purgeTimeInput').value = val;[cite: 3]
+      checkAutoPurgeTime();[cite: 3]
     }
   });
 
   function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371e3;
-    const φ1 = lat1 * Math.PI / 180;
-    const φ2 = lat2 * Math.PI / 180;
-    const Δφ = (lat2 - lat1) * Math.PI / 180;
-    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const R = 6371e3;[cite: 3]
+    const φ1 = lat1 * Math.PI / 180;[cite: 3]
+    const φ2 = lat2 * Math.PI / 180;[cite: 3]
+    const Δφ = (lat2 - lat1) * Math.PI / 180;[cite: 3]
+    const Δλ = (lon2 - lon1) * Math.PI / 180;[cite: 3]
 
     const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
               Math.cos(φ1) * Math.cos(φ2) *
-              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);[cite: 3]
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));[cite: 3]
 
-    return R * c;
+    return R * c;[cite: 3]
   }
 
   function handlePositionSuccess(position) {
-    const geoStatus = document.getElementById('geoStatus');
-    const mapBox = document.getElementById('mapContainer');
-    const coordsBox = document.getElementById('locationCoords');
+    const geoStatus = document.getElementById('geoStatus');[cite: 3]
+    const mapBox = document.getElementById('mapContainer');[cite: 3]
+    const coordsBox = document.getElementById('locationCoords');[cite: 3]
 
-    const userLat = position.coords.latitude;
-    const userLng = position.coords.longitude;
-    const accuracy = position.coords.accuracy;
+    const userLat = position.coords.latitude;[cite: 3]
+    const userLng = position.coords.longitude;[cite: 3]
+    const accuracy = position.coords.accuracy;[cite: 3]
 
-    const distance = calculateDistance(userLat, userLng, SIZO_LAT, SIZO_LNG);
+    const distance = calculateDistance(userLat, userLng, SIZO_LAT, SIZO_LNG);[cite: 3]
 
-    coordsBox.style.display = 'block';
-    coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
+    coordsBox.style.display = 'block';[cite: 3]
+    coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;[cite: 3]
 
     if (accuracy > ALLOWED_RADIUS_METERS * 2) {
-      geoStatus.className = "geo-status-box geo-error";
-      geoStatus.innerText = "⚠️ Точность GPS слишком низкая. Пожалуйста, выйдите на открытое пространство.";
-      isUserLocationValid = false;
+      geoStatus.className = "geo-status-box geo-error";[cite: 3]
+      geoStatus.innerText = "⚠️ Точность GPS слишком низкая. Пожалуйста, выйдите на открытое пространство.";[cite: 3]
+      isUserLocationValid = false;[cite: 3]
     } else if (distance <= ALLOWED_RADIUS_METERS) {
-      geoStatus.className = "geo-status-box geo-success";
-      geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;
-      isUserLocationValid = true;
+      geoStatus.className = "geo-status-box geo-success";[cite: 3]
+      geoStatus.innerText = `✅ Вы находитесь в районе разрешения (${Math.round(distance)} м от СИЗО). Запись разрешена.`;[cite: 3]
+      isUserLocationValid = true;[cite: 3]
     } else {
-      geoStatus.className = "geo-status-box geo-error";
-      geoStatus.innerText = `⛔ Вы вне зоны разрешения! Вы в ${Math.round(distance)} м от СИЗО (допустимо: ${ALLOWED_RADIUS_METERS} м).`;
-      isUserLocationValid = false;
+      geoStatus.className = "geo-status-box geo-error";[cite: 3]
+      geoStatus.innerText = `⛔ Вы вне зоны разрешения! Вы в ${Math.round(distance)} м от СИЗО (допустимо: ${ALLOWED_RADIUS_METERS} м).`;[cite: 3]
+      isUserLocationValid = false;[cite: 3]
     }
 
     if (typeof ymaps !== 'undefined' && ymaps.Map) {
-      mapBox.style.display = 'block';
+      mapBox.style.display = 'block';[cite: 3]
       ymaps.ready(() => {
         if (!ymapsMap) {
           try {
             ymapsMap = new ymaps.Map("mapContainer", {
-              center: [SIZO_LAT, SIZO_LNG],
-              zoom: 16,
-              controls: ['zoomControl', 'fullscreenControl']
+              center: [SIZO_LAT, SIZO_LNG],[cite: 3]
+              zoom: 16,[cite: 3]
+              controls: ['zoomControl', 'fullscreenControl'][cite: 3]
             });
 
             const sizoplacemark = new ymaps.Placemark([SIZO_LAT, SIZO_LNG], {
-              balloonContent: '<b>Здание СИЗО (КПП)</b>'
-            }, { preset: 'islands#redDotIcon' });
+              balloonContent: '<b>Здание СИЗО (КПП)</b>'[cite: 3]
+            }, { preset: 'islands#redDotIcon' });[cite: 3]
 
             sizocircle = new ymaps.Circle([
-              [SIZO_LAT, SIZO_LNG],
-              ALLOWED_RADIUS_METERS
+              [SIZO_LAT, SIZO_LNG],[cite: 3]
+              ALLOWED_RADIUS_METERS[cite: 3]
             ], {
-              balloonContent: `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`
+              balloonContent: `Зона разрешения записи (${ALLOWED_RADIUS_METERS}м)`[cite: 3]
             }, {
-              fillColor: "#FF000022",
-              strokeColor: "#FF0000",
-              strokeOpacity: 0.8,
-              strokeWidth: 2
+              fillColor: "#FF000022",[cite: 3]
+              strokeColor: "#FF0000",[cite: 3]
+              strokeOpacity: 0.8,[cite: 3]
+              strokeWidth: 2[cite: 3]
             });
 
             userPlacemark = new ymaps.Placemark([userLat, userLng], {
-              iconContent: 'Я',
-              balloonContent: '<b>Вы находитесь здесь</b>'
-            }, { preset: 'islands#blueUserIcon' });
+              iconContent: 'Я',[cite: 3]
+              balloonContent: '<b>Вы находитесь здесь</b>'[cite: 3]
+            }, { preset: 'islands#blueUserIcon' });[cite: 3]
 
-            ymapsMap.geoObjects.add(sizocircle);
-            ymapsMap.geoObjects.add(sizoplacemark);
-            ymapsMap.geoObjects.add(userPlacemark);
+            ymapsMap.geoObjects.add(sizocircle);[cite: 3]
+            ymapsMap.geoObjects.add(sizoplacemark);[cite: 3]
+            ymapsMap.geoObjects.add(userPlacemark);[cite: 3]
 
             ymapsMap.setBounds(ymapsMap.geoObjects.getBounds(), {
-              checkZoomRange: true,
-              zoomMargin: 30
+              checkZoomRange: true,[cite: 3]
+              zoomMargin: 30[cite: 3]
             });
           } catch(e) {}
         } else {
           if (userPlacemark) {
-            userPlacemark.geometry.setCoordinates([userLat, userLng]);
+            userPlacemark.geometry.setCoordinates([userLat, userLng]);[cite: 3]
           } else {
             userPlacemark = new ymaps.Placemark([userLat, userLng], {
-              iconContent: 'Я',
-              balloonContent: '<b>Вы находитесь здесь</b>'
-            }, { preset: 'islands#blueUserIcon' });
-            ymapsMap.geoObjects.add(userPlacemark);
+              iconContent: 'Я',[cite: 3]
+              balloonContent: '<b>Вы находитесь здесь</b>'[cite: 3]
+            }, { preset: 'islands#blueUserIcon' });[cite: 3]
+            ymapsMap.geoObjects.add(userPlacemark);[cite: 3]
           }
         }
       });
     }
 
-    toggleButtonsState();
+    toggleButtonsState();[cite: 3]
   }
 
   function handlePositionError(error) {
-    const geoStatus = document.getElementById('geoStatus');
-    geoStatus.className = "geo-status-box geo-error";
-    geoStatus.innerText = "⚠️ Разрешите доступ к геопозиции (GPS) в настройках браузера.";
-    isUserLocationValid = false;
-    toggleButtonsState();
+    const geoStatus = document.getElementById('geoStatus');[cite: 3]
+    geoStatus.className = "geo-status-box geo-error";[cite: 3]
+    geoStatus.innerText = "⚠️ Разрешите доступ к геопозиции (GPS) в настройках браузера.";[cite: 3]
+    isUserLocationValid = false;[cite: 3]
+    toggleButtonsState();[cite: 3]
   }
 
   function initGeoTracking() {
     if (!navigator.geolocation) {
-      handlePositionError();
+      handlePositionError();[cite: 3]
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(handlePositionSuccess, handlePositionError, { enableHighAccuracy: true, timeout: 5000 });
-    navigator.geolocation.watchPosition(handlePositionSuccess, handlePositionError, { enableHighAccuracy: true, maximumAge: 5000 });
+    navigator.geolocation.getCurrentPosition(handlePositionSuccess, handlePositionError, { enableHighAccuracy: true, timeout: 5000 });[cite: 3]
+    navigator.geolocation.watchPosition(handlePositionSuccess, handlePositionError, { enableHighAccuracy: true, maximumAge: 5000 });[cite: 3]
   }
 
-  initGeoTracking();
+  initGeoTracking();[cite: 3]
 
   function timeToMinutes(timeStr) {
-    if (!timeStr) return 0;
-    const parts = timeStr.split(':');
-    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    if (!timeStr) return 0;[cite: 3]
+    const parts = timeStr.split(':');[cite: 3]
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);[cite: 3]
   }
 
   function isWorkingHours() {
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const startMin = timeToMinutes(workingHours.start);
-    const endMin = timeToMinutes(workingHours.end);
+    const now = new Date();[cite: 3]
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();[cite: 3]
+    const startMin = timeToMinutes(workingHours.start);[cite: 3]
+    const endMin = timeToMinutes(workingHours.end);[cite: 3]
 
-    return currentMinutes >= startMin && currentMinutes <= endMin;
+    return currentMinutes >= startMin && currentMinutes <= endMin;[cite: 3]
   }
 
   function toggleButtonsState() {
-    const isChecked = document.getElementById('consentCheckbox').checked;
+    const isChecked = document.getElementById('consentCheckbox').checked;[cite: 3]
     
-    let existing = queueItems.find(item => item.uid === clientId);
+    let existing = queueItems.find(item => item.uid === clientId);[cite: 3]
     if (!existing && !isQueueLoaded) {
-      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 3]
       if (savedTicketJson) {
-        try { existing = JSON.parse(savedTicketJson); } catch(e){}
+        try { existing = JSON.parse(savedTicketJson); } catch(e){}[cite: 3]
       }
     }
 
-    const warningBox = document.getElementById('consentWarningBox');
-    const inTime = isWorkingHours();
-    const inGeo = isUserLocationValid;
+    const warningBox = document.getElementById('consentWarningBox');[cite: 3]
+    const inTime = isWorkingHours();[cite: 3]
+    const inGeo = isUserLocationValid;[cite: 3]
 
     if (isChecked && !existing && (!inTime || !inGeo)) {
-      let reasons = [];
+      let reasons = [];[cite: 3]
       if (!inGeo) {
-        reasons.push(`📍 <strong>Геопозиция:</strong> Вы находитесь вне разрешенного радиуса (${ALLOWED_RADIUS_METERS} м) от СИЗО.`);
+        reasons.push(`📍 <strong>Геопозиция:</strong> Вы находитесь вне разрешенного радиуса (${ALLOWED_RADIUS_METERS} м) от СИЗО.`);[cite: 3]
       }
       if (!inTime) {
-        reasons.push(`🕒 <strong>Время приема:</strong> Запись закрыта. График работы — с ${workingHours.start} до ${workingHours.end}.`);
+        reasons.push(`🕒 <strong>Время приема:</strong> Запись закрыта. График работы — с ${workingHours.start} до ${workingHours.end}.`);[cite: 3]
       }
 
       warningBox.innerHTML = `
@@ -951,127 +951,127 @@
         <ul style="margin: 4px 0 0 0; padding-left: 16px;">
           ${reasons.map(r => `<li style="margin-top: 2px;">${r}</li>`).join('')}
         </ul>
-      `;
-      warningBox.style.display = 'block';
+      `;[cite: 3]
+      warningBox.style.display = 'block';[cite: 3]
     } else {
-      warningBox.style.display = 'none';
+      warningBox.style.display = 'none';[cite: 3]
     }
   }
 
   function checkDeviceRegistration() {
-    const alertBox = document.getElementById('alertBox');
-    const registrationBlock = document.getElementById('registrationBlock');
+    const alertBox = document.getElementById('alertBox');[cite: 3]
+    const registrationBlock = document.getElementById('registrationBlock');[cite: 3]
 
-    let existingList = queueItems.filter(item => item.uid === clientId);
+    let existingList = queueItems.filter(item => item.uid === clientId);[cite: 3]
 
     if (existingList.length === 0 && !isQueueLoaded) {
-      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 3]
       if (savedTicketJson) {
         try {
-          const parsed = JSON.parse(savedTicketJson);
-          existingList = Array.isArray(parsed) ? parsed : [parsed];
+          const parsed = JSON.parse(savedTicketJson);[cite: 3]
+          existingList = Array.isArray(parsed) ? parsed : [parsed];[cite: 3]
         } catch(e) {}
       }
     }
 
     if (existingList.length > 0) {
-      if (registrationBlock) registrationBlock.style.display = 'none';
+      if (registrationBlock) registrationBlock.style.display = 'none';[cite: 3]
       if (alertBox) {
-        alertBox.style.display = 'block';
-        const codesStr = existingList.map(i => escapeHTML(i.code)).join(', ');
+        alertBox.style.display = 'block';[cite: 3]
+        const codesStr = existingList.map(i => escapeHTML(i.code)).join(', ');[cite: 3]
         alertBox.innerHTML = `
           <div class="alert-content">
             <button class="btn-alert-ticket" type="button" onclick="showTicket()">🎫 Мои талоны</button>
             <div>⚠️ Вы зарегистрированы под номером(-ами): <strong>${codesStr}</strong>. Повторная запись заблокирована.</div>
-          </div>`;
+          </div>`;[cite: 3]
       }
       return;
     }
 
     if (!isWorkingHours()) {
-      if (registrationBlock) registrationBlock.style.display = 'none';
+      if (registrationBlock) registrationBlock.style.display = 'none';[cite: 3]
       if (alertBox) {
-        alertBox.style.display = 'block';
-        alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает с ${workingHours.start} до ${workingHours.end}.`;
+        alertBox.style.display = 'block';[cite: 3]
+        alertBox.innerHTML = `🕒 <strong>Запись закрыта!</strong><br>Электронная очередь работает с ${workingHours.start} до ${workingHours.end}.`;[cite: 3]
       }
       return;
     }
 
-    if (registrationBlock) registrationBlock.style.display = 'block';
-    if (alertBox) alertBox.style.display = 'none';
-    toggleButtonsState();
+    if (registrationBlock) registrationBlock.style.display = 'block';[cite: 3]
+    if (alertBox) alertBox.style.display = 'none';[cite: 3]
+    toggleButtonsState();[cite: 3]
   }
 
   function registerUser(windowsArray) {
-    const nowTime = Date.now();
-    if (nowTime - lastSubmitTime < 2000) {
+    const nowTime = Date.now();[cite: 3]
+    if (nowTime - lastSubmitTime < 2000) {[cite: 3]
       return;
     }
-    lastSubmitTime = nowTime;
+    lastSubmitTime = nowTime;[cite: 3]
 
     if (!isWorkingHours()) { 
-      showCustomMessage(`Запись закрыта. Рабочий график: с ${workingHours.start} до ${workingHours.end}!`); 
+      showCustomMessage(`Запись закрыта. Рабочий график: с ${workingHours.start} до ${workingHours.end}!`);[cite: 3]
       return; 
     }
     if (!isUserLocationValid) { 
-      showCustomMessage("Запись отклонена: вы находитесь вне зоны разрешения СИЗО!"); 
+      showCustomMessage("Запись отклонена: вы находитесь вне зоны разрешения СИЗО!");[cite: 3]
       return; 
     }
 
-    const consentChecked = document.getElementById('consentCheckbox').checked;
+    const consentChecked = document.getElementById('consentCheckbox').checked;[cite: 3]
     if (!consentChecked) { 
-      showCustomMessage("Подтвердите согласие с правилами записи!"); 
+      showCustomMessage("Подтвердите согласие с правилами записи!");[cite: 3]
       return; 
     }
 
-    let publicName = "";
+    let publicName = "";[cite: 3]
     if (currentUserType === 'public') {
-      publicName = escapeHTML(document.getElementById('publicNameInput').value.trim());
+      publicName = escapeHTML(document.getElementById('publicNameInput').value.trim());[cite: 3]
       if (!publicName) {
-        showCustomMessage("Пожалуйста, укажите ваше имя перед выбором очереди!");
+        showCustomMessage("Пожалуйста, укажите ваше имя перед выбором очереди!");[cite: 3]
         return;
       }
     }
 
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    const newItems = [];
+    const now = new Date();[cite: 3]
+    const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });[cite: 3]
+    const newItems = [];[cite: 3]
 
     windowsArray.forEach(winNum => {
-      const countInWindow = queueItems.filter(i => i.windowNum === winNum).length + 1;
-      const code = `О${winNum}-${String(countInWindow).padStart(3, '0')}`;
+      const countInWindow = queueItems.filter(i => i.windowNum === winNum).length + 1;[cite: 3]
+      const code = `О${winNum}-${String(countInWindow).padStart(3, '0')}`;[cite: 3]
       
       newItems.push({
-        code: code,
-        windowNum: winNum,
-        uid: clientId,
-        time: timeStr,
-        name: currentUserType === 'public' ? publicName : "Обычный посетитель",
-        isPublic: currentUserType === 'public',
-        timestamp: Date.now()
+        code: code,[cite: 3]
+        windowNum: winNum,[cite: 3]
+        uid: clientId,[cite: 3]
+        time: timeStr,[cite: 3]
+        name: currentUserType === 'public' ? publicName : "Обычный посетитель",[cite: 3]
+        isPublic: currentUserType === 'public',[cite: 3]
+        timestamp: Date.now()[cite: 3]
       });
     });
 
-    localStorage.setItem('sizo_ticket_obj_' + todayStr, JSON.stringify(newItems));
+    localStorage.setItem('sizo_ticket_obj_' + todayStr, JSON.stringify(newItems));[cite: 3]
 
-    const promises = newItems.map(item => queueRef.push(item));
+    const promises = newItems.map(item => queueRef.push(item));[cite: 3]
 
     Promise.all(promises).then(() => {
-      showTicket();
-      checkDeviceRegistration();
-    }).catch(err => { showCustomMessage("Ошибка записи: " + err.message); });
+      showTicket();[cite: 3]
+      checkDeviceRegistration();[cite: 3]
+    }).catch(err => { showCustomMessage("Ошибка записи: " + err.message); });[cite: 3]
   }
 
   function renderTable() {
-    const tbody = document.getElementById('queueTableBody');
+    const tbody = document.getElementById('queueTableBody');[cite: 3]
     if (queueItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#aaa;">Очередь на сегодня пуста</td></tr>';[cite: 3]
       return;
     }
 
     const sorted = [...queueItems].sort((a, b) => {
-      if (a.windowNum !== b.windowNum) return a.windowNum - b.windowNum;
-      return a.code.localeCompare(b.code, undefined, { numeric: true, sensitivity: 'base' });
+      if (a.windowNum !== b.windowNum) return a.windowNum - b.windowNum;[cite: 3]
+      return a.code.localeCompare(b.code, undefined, { numeric: true, sensitivity: 'base' });[cite: 3]
     });
 
     tbody.innerHTML = sorted.map(item => `
@@ -1081,124 +1081,128 @@
         <td>${item.isPublic ? `⚖️ <strong>${escapeHTML(item.name)}</strong> (Общ. защитник)` : '👤 Обычный посетитель'}</td>
         <td>${escapeHTML(item.time)}</td>
       </tr>
-    `).join('');
+    `).join('');[cite: 3]
   }
 
-  function openPolicyModal() { document.getElementById('policyModalOverlay').style.display = 'flex'; }
+  function openPolicyModal() { document.getElementById('policyModalOverlay').style.display = 'flex'; }[cite: 3]
   
   function openAdminModal() { 
-    document.getElementById('adminLoginForm').style.display = 'block';
-    document.getElementById('adminSettingsForm').style.display = 'none';
-    document.getElementById('adminEmail').value = '';
-    document.getElementById('adminPassword').value = '';
-    document.getElementById('adminModalOverlay').style.display = 'flex'; 
+    document.getElementById('adminLoginForm').style.display = 'block';[cite: 3]
+    document.getElementById('adminSettingsForm').style.display = 'none';[cite: 3]
+    document.getElementById('adminEmail').value = '';[cite: 3]
+    document.getElementById('adminPassword').value = '';[cite: 3]
+    document.getElementById('adminModalOverlay').style.display = 'flex';[cite: 3]
   }
 
   function closeAdminModal() {
-    closeModal('adminModalOverlay');
-    auth.signOut();
+    closeModal('adminModalOverlay');[cite: 3]
+    auth.signOut();[cite: 3]
   }
 
   async function submitAdminLogin() {
-    const email = document.getElementById('adminEmail').value.trim();
-    const password = document.getElementById('adminPassword').value.trim();
+    const email = document.getElementById('adminEmail').value.trim();[cite: 3]
+    const password = document.getElementById('adminPassword').value.trim();[cite: 3]
 
     if (!email || !password) { 
-      showCustomMessage('Введите email и пароль администратора');
+      showCustomMessage('Введите email и пароль администратора');[cite: 3]
       return; 
     }
 
     try {
-      await auth.signInWithEmailAndPassword(email, password);
-      document.getElementById('adminLoginForm').style.display = 'none';
-      document.getElementById('adminSettingsForm').style.display = 'block';
+      await auth.signInWithEmailAndPassword(email, password);[cite: 3]
+      document.getElementById('adminLoginForm').style.display = 'none';[cite: 3]
+      document.getElementById('adminSettingsForm').style.display = 'block';[cite: 3]
     } catch (error) {
-      showCustomMessage('Ошибка авторизации: ' + error.message);
+      showCustomMessage('Ошибка авторизации: ' + error.message);[cite: 3]
     }
   }
 
   async function submitSaveSettings() {
-    const startVal = document.getElementById('startTimeInput').value;
-    const endVal = document.getElementById('endTimeInput').value;
-    const purgeVal = document.getElementById('purgeTimeInput').value;
-    const radiusVal = parseInt(document.getElementById('radiusInput').value, 10);
+    const startVal = document.getElementById('startTimeInput').value;[cite: 3]
+    const endVal = document.getElementById('endTimeInput').value;[cite: 3]
+    const purgeVal = document.getElementById('purgeTimeInput').value;[cite: 3]
+    const radiusVal = parseInt(document.getElementById('radiusInput').value, 10);[cite: 3]
 
     if (!startVal || !endVal || !purgeVal || isNaN(radiusVal)) {
-      showCustomMessage('Заполните все поля корректно!');
+      showCustomMessage('Заполните все поля корректно!');[cite: 3]
       return;
     }
 
     try {
       await Promise.all([
-        settingsTimeRef.set({ start: startVal, end: endVal }),
-        settingsPurgeRef.set(purgeVal),
-        settingsRadiusRef.set(radiusVal)
+        settingsTimeRef.set({ start: startVal, end: endVal }),[cite: 3]
+        settingsPurgeRef.set(purgeVal),[cite: 3]
+        settingsRadiusRef.set(radiusVal)[cite: 3]
       ]);
 
-      showCustomMessage('Настройки успешно сохранены!');
-      closeAdminModal();
+      showCustomMessage('Настройки успешно сохранены!');[cite: 3]
+      closeAdminModal();[cite: 3]
     } catch (error) {
-      showCustomMessage('Ошибка: ' + error.message);
+      showCustomMessage('Ошибка: ' + error.message);[cite: 3]
     }
   }
 
   function promptAdminReset() {
-    document.getElementById('confirmModalOverlay').style.display = 'flex';
+    document.getElementById('confirmModalOverlay').style.display = 'flex';[cite: 3]
   }
 
   async function executeAdminReset() {
-    closeModal('confirmModalOverlay');
+    closeModal('confirmModalOverlay');[cite: 3]
     try {
-      localStorage.removeItem('sizo_ticket_obj_' + todayStr);
-      await db.ref('queues').remove();
-      showCustomMessage('Вся очередь успешно очищена!');
-      closeAdminModal();
+      if (!auth.currentUser) {
+        showCustomMessage('Ошибка: сессия администратора истекла. Авторизуйтесь заново.');
+        return;
+      }
+      localStorage.removeItem('sizo_ticket_obj_' + todayStr);[cite: 3]
+      await db.ref('queues').remove();[cite: 3]
+      showCustomMessage('Вся очередь успешно очищена!');[cite: 3]
+      closeAdminModal();[cite: 3]
     } catch (error) {
-      showCustomMessage('Ошибка: ' + error.message);
+      showCustomMessage('Ошибка: ' + error.message);[cite: 3]
     }
   }
 
   function showTicket() {
-    let myTickets = queueItems.filter(i => i.uid === clientId);
+    let myTickets = queueItems.filter(i => i.uid === clientId);[cite: 3]
     
     if (myTickets.length === 0 && !isQueueLoaded) {
-      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);
+      const savedTicketJson = localStorage.getItem('sizo_ticket_obj_' + todayStr);[cite: 3]
       if (savedTicketJson) {
         try {
-          const parsed = JSON.parse(savedTicketJson);
-          myTickets = Array.isArray(parsed) ? parsed : [parsed];
+          const parsed = JSON.parse(savedTicketJson);[cite: 3]
+          myTickets = Array.isArray(parsed) ? parsed : [parsed];[cite: 3]
         } catch(e){}
       }
     }
 
-    if (myTickets.length === 0) return;
+    if (myTickets.length === 0) return;[cite: 3]
 
-    const nameElem = document.getElementById('mVisitorName');
+    const nameElem = document.getElementById('mVisitorName');[cite: 3]
     if (myTickets[0].isPublic) {
-      nameElem.innerText = `Общественный защитник: ${myTickets[0].name}`;
-      nameElem.style.display = 'block';
+      nameElem.innerText = `Общественный защитник: ${myTickets[0].name}`;[cite: 3]
+      nameElem.style.display = 'block';[cite: 3]
     } else {
-      nameElem.style.display = 'none';
+      nameElem.style.display = 'none';[cite: 3]
     }
 
-    const container = document.getElementById('mTicketsContainer');
+    const container = document.getElementById('mTicketsContainer');[cite: 3]
     container.innerHTML = myTickets.map(t => `
       <div class="ticket-item">
         <div class="window-title">ОКОШКО №${Number(t.windowNum)}</div>
         <div class="number">${escapeHTML(t.code)}</div>
         <div class="time-stamp">Выдан: ${escapeHTML(t.time)}</div>
       </div>
-    `).join('');
+    `).join('');[cite: 3]
 
-    document.getElementById('modalOverlay').style.display = 'flex';
+    document.getElementById('modalOverlay').style.display = 'flex';[cite: 3]
   }
 
-  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }[cite: 3]
 
-  if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+  if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {[cite: 3]
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .catch((err) => console.log('Ошибка регистрации PWA:', err));
+      navigator.serviceWorker.register('./sw.js')[cite: 3]
+        .catch((err) => console.log('Ошибка регистрации PWA:', err));[cite: 3]
     });
   }
 </script>
