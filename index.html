@@ -298,7 +298,7 @@
     }
     .modal-ticket .time-stamp { font-size: 14px; color: #666; font-weight: bold; }
 
-    .modal-admin, .modal-policy, .modal-confirm { background: white; padding: 15px 12px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .modal-admin, .modal-policy, .modal-confirm, .modal-msg { background: white; padding: 15px 12px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .modal-policy { text-align: left; max-height: 80vh; overflow-y: auto; }
     .modal-policy h3 { text-align: center; margin-top: 0; }
     .modal-policy p { font-size: 11px; color: #4a5568; line-height: 1.4; }
@@ -511,7 +511,7 @@
   </div>
 </div>
 
-<!-- Подтверждение очистки -->
+<!-- Модальное окно подтверждения -->
 <div id="confirmModalOverlay" class="modal-overlay">
   <div class="modal-confirm">
     <h3 style="margin-top:0; color:#e74c3c;">Подтверждение действий</h3>
@@ -520,6 +520,15 @@
       <button class="btn-modal btn-danger" style="margin:0; flex:1;" type="button" onclick="executeAdminReset()">Очистить</button>
       <button class="btn-modal btn-close" style="margin:0; flex:1;" type="button" onclick="closeModal('confirmModalOverlay')">Отмена</button>
     </div>
+  </div>
+</div>
+
+<!-- Модальное окно кастомных сообщений (Замена alert) -->
+<div id="messageModalOverlay" class="modal-overlay">
+  <div class="modal-msg">
+    <h3 id="msgModalTitle" style="margin-top:0; font-size:16px;">Уведомление</h3>
+    <p id="msgModalText" style="font-size:12px; color:#333; margin-bottom:15px; line-height:1.4;"></p>
+    <button class="btn-modal btn-primary" style="margin:0; width:100%;" type="button" onclick="closeModal('messageModalOverlay')">ОК</button>
   </div>
 </div>
 
@@ -555,11 +564,18 @@
   let userPlacemark = null;
   let isQueueLoaded = false;
 
+  // Кастомная замена системного alert()
+  function showCustomMessage(text, title = "Уведомление") {
+    document.getElementById('msgModalTitle').innerText = title;
+    document.getElementById('msgModalText').innerText = text;
+    document.getElementById('messageModalOverlay').style.display = 'flex';
+  }
+
   let tapCount = 0;
   let lastTapTime = 0;
 
   document.body.addEventListener('click', (e) => {
-    if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy') || e.target.closest('.modal-confirm')) {
+    if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy') || e.target.closest('.modal-confirm') || e.target.closest('.modal-msg')) {
       return;
     }
 
@@ -992,17 +1008,17 @@
     lastSubmitTime = nowTime;
 
     if (!isWorkingHours()) { 
-      alert(`Запись закрыта. Рабочий график: с ${workingHours.start} до ${workingHours.end}!`); 
+      showCustomMessage(`Запись закрыта. Рабочий график: с ${workingHours.start} до ${workingHours.end}!`); 
       return; 
     }
     if (!isUserLocationValid) { 
-      alert("Запись отклонена: вы находитесь вне зоны разрешения СИЗО!"); 
+      showCustomMessage("Запись отклонена: вы находитесь вне зоны разрешения СИЗО!"); 
       return; 
     }
 
     const consentChecked = document.getElementById('consentCheckbox').checked;
     if (!consentChecked) { 
-      alert("Подтвердите согласие с правилами записи!"); 
+      showCustomMessage("Подтвердите согласие с правилами записи!"); 
       return; 
     }
 
@@ -1010,7 +1026,7 @@
     if (currentUserType === 'public') {
       publicName = escapeHTML(document.getElementById('publicNameInput').value.trim());
       if (!publicName) {
-        alert("Пожалуйста, укажите ваше имя перед выбором очереди!");
+        showCustomMessage("Пожалуйста, укажите ваше имя перед выбором очереди!");
         return;
       }
     }
@@ -1041,7 +1057,7 @@
     Promise.all(promises).then(() => {
       showTicket();
       checkDeviceRegistration();
-    }).catch(err => { alert("Ошибка записи: " + err.message); });
+    }).catch(err => { showCustomMessage("Ошибка записи: " + err.message); });
   }
 
   function renderTable() {
@@ -1078,11 +1094,11 @@
     const radiusVal = parseInt(document.getElementById('radiusInput').value, 10);
 
     if (!email || !password) { 
-      alert('Введите email и пароль администратора');
+      showCustomMessage('Введите email и пароль администратора');
       return; 
     }
     if (!startVal || !endVal || !purgeVal || isNaN(radiusVal)) {
-      alert('Заполните все поля корректно!');
+      showCustomMessage('Заполните все поля корректно!');
       return;
     }
 
@@ -1095,11 +1111,11 @@
         settingsRadiusRef.set(radiusVal)
       ]);
 
-      alert('Настройки успешно сохранены!');
+      showCustomMessage('Настройки успешно сохранены!');
       closeModal('adminModalOverlay');
       await auth.signOut();
     } catch (error) {
-      alert('Ошибка: ' + error.message);
+      showCustomMessage('Ошибка: ' + error.message);
     }
   }
 
@@ -1108,7 +1124,7 @@
     const password = document.getElementById('adminPassword').value.trim();
 
     if (!email || !password) { 
-      alert('Введите email и пароль администратора'); 
+      showCustomMessage('Введите email и пароль администратора'); 
       return; 
     }
     document.getElementById('confirmModalOverlay').style.display = 'flex';
@@ -1123,11 +1139,11 @@
       await auth.signInWithEmailAndPassword(email, password);
       localStorage.removeItem('sizo_ticket_obj_' + todayStr);
       await db.ref('queues').remove();
-      alert('Вся очередь успешно очищена!');
+      showCustomMessage('Вся очередь успешно очищена!');
       closeModal('adminModalOverlay');
       await auth.signOut();
     } catch (error) {
-      alert('Ошибка: ' + error.message);
+      showCustomMessage('Ошибка: ' + error.message);
     }
   }
 
