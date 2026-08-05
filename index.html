@@ -138,7 +138,6 @@
       margin-bottom: 6px;
     }
 
-    /* Блок чекбоксов типа посетителя */
     .user-type-selector {
       display: flex;
       flex-direction: column;
@@ -236,7 +235,6 @@
     .btn-w3 { background-color: #2980b9; }
     .btn-combo { background-color: #8e44ad; }
 
-    /* Прокручиваемый блок таблицы очереди */
     .table-responsive { 
       width: 100%; 
       max-height: 200px; 
@@ -378,7 +376,6 @@
 
       <div class="section-label">Выберите тип посетителя</div>
 
-      <!-- Чекбоксы выбора типа посетителя -->
       <div class="user-type-selector">
         <label class="checkbox-label-btn checkbox-citizen">
           <input type="checkbox" id="checkCitizen" onchange="handleTypeCheckbox('citizen')">
@@ -390,7 +387,6 @@
         </label>
       </div>
 
-      <!-- Поле Имени -->
       <div id="publicNameBlock" class="form-group" style="display: none;">
         <label for="publicNameInput">Имя Общественного защитника (обязательно):</label>
         <input type="text" id="publicNameInput" class="form-control" placeholder="Введите ваше имя" maxlength="50">
@@ -405,7 +401,6 @@
 
       <div id="consentWarningBox" class="consent-warning-box"></div>
 
-      <!-- Кнопки записи -->
       <div id="citizenButtons" class="btn-group" style="display: none;">
         <button id="btnW2" class="btn btn-w2" type="button" onclick="registerUser([2])">Окошко №2 (Передача)</button>
         <button id="btnW3" class="btn btn-w3" type="button" onclick="registerUser([3])">Окошко №3 (Передача)</button>
@@ -438,14 +433,12 @@
       </table>
     </div>
 
-    <!-- Панель администратора -->
     <div id="adminPanelBlock" class="admin-panel">
       <button class="btn-admin-reset" type="button" onclick="openAdminModal()">⚙️ Управление записью (Админ)</button>
     </div>
   </div>
 </div>
 
-<!-- Модальные окна -->
 <div id="modalOverlay" class="modal-overlay">
   <div class="modal-ticket">
     <h3>ТАЛОН ОЧЕРЕДИ</h3>
@@ -471,12 +464,10 @@
   </div>
 </div>
 
-<!-- Модальное окно Админа (с разделением на Вход и Настройки) -->
 <div id="adminModalOverlay" class="modal-overlay">
   <div class="modal-admin">
     <h3>ПАНЕЛЬ АДМИНИСТРАТОРА</h3>
 
-    <!-- Этап 1: Только авторизация -->
     <div id="adminLoginForm">
       <p style="font-size:11px; color:#666; margin-bottom:8px;">Авторизуйтесь для доступа к настройкам очереди</p>
       <input type="email" id="adminEmail" class="admin-input" placeholder="Email администратора">
@@ -484,7 +475,6 @@
       <button class="btn-modal btn-primary" style="width:100%; margin-top:8px;" type="button" onclick="submitAdminLogin()">🔑 Войти</button>
     </div>
 
-    <!-- Этап 2: Настройки (скрыты до успешного входа) -->
     <div id="adminSettingsForm" style="display: none;">
       <p style="font-size:11px; color:#27ae60; font-weight:bold; margin-bottom:8px;">✅ Доступ разрешен</p>
 
@@ -522,7 +512,6 @@
   </div>
 </div>
 
-<!-- Модальное окно подтверждения -->
 <div id="confirmModalOverlay" class="modal-overlay">
   <div class="modal-confirm">
     <h3 style="margin-top:0; color:#e74c3c;">Подтверждение действий</h3>
@@ -534,7 +523,6 @@
   </div>
 </div>
 
-<!-- Модальное окно кастомных сообщений -->
 <div id="messageModalOverlay" class="modal-overlay">
   <div class="modal-msg">
     <h3 id="msgModalTitle" style="margin-top:0; font-size:16px;">Уведомление</h3>
@@ -1107,7 +1095,6 @@
     auth.signOut();
   }
 
-  // Проверка логина/пароля администратора
   async function submitAdminLogin() {
     const email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
