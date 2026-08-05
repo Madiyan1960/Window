@@ -267,80 +267,85 @@
       font-weight: bold; 
     }
 
-    .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; padding: 10px; }
+    .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
     
-    /* СТИЛИ УЛУЧШЕННОГО ТАЛОНА */
+    /* НА ВЕСЬ ЭКРАН ТЕЛЕФОНА */
     .modal-ticket { 
       background: #ffffff; 
-      padding: 20px 15px; 
-      border-radius: 16px; 
-      width: 100%; 
-      max-width: 420px; 
+      padding: 15px 10px; 
+      border-radius: 0; 
+      width: 100vw; 
+      height: 100vh; 
+      max-width: 100%; 
       text-align: center; 
-      box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
+      box-shadow: none; 
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      border: 3px solid #2c3e50;
+      border: none;
       overflow-y: auto;
-      max-height: 90vh;
     }
     .ticket-emblem {
-      width: 50px;
-      height: 50px;
+      width: 65px;
+      height: 65px;
       object-fit: contain;
-      margin-bottom: 4px;
+      margin-top: 5px;
     }
     .modal-ticket h3 { 
-      margin: 0 0 5px 0; 
-      font-size: 15px; 
+      margin: 2px 0; 
+      font-size: 16px; 
       color: #7f8c8d; 
-      letter-spacing: 2px; 
+      letter-spacing: 3px; 
       text-transform: uppercase;
       font-weight: 700;
     }
     .modal-ticket .visitor-name { 
-      font-size: 13px; 
+      font-size: 14px; 
       font-weight: bold; 
       color: #2c3e50; 
-      margin-bottom: 8px; 
+      margin: 4px 0; 
       background: #f1f5f9;
-      padding: 3px 8px;
+      padding: 4px 12px;
       border-radius: 20px;
     }
     .modal-ticket .ticket-item {
-      margin: 6px 0;
-      padding: 12px 10px;
+      margin: auto 0;
+      padding: 20px 10px;
       background: #f8fafc;
-      border: 2px dashed #cbd5e1;
-      border-radius: 12px;
+      border: 3px dashed #cbd5e1;
+      border-radius: 16px;
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     .modal-ticket .window-title { 
-      font-size: 15px; 
-      font-weight: 700; 
+      font-size: 22px; 
+      font-weight: 800; 
       color: #34495e; 
-      margin-bottom: 4px;
+      margin-bottom: 5px;
       text-transform: uppercase;
     }
-    /* КРУПНЫЙ НОМЕР БЕЗ НУЛЕЙ */
+    /* СВЕРХКРУПНЫЙ НОМЕР ОЧЕРЕДИ БЕЗ НУЛЕЙ */
     .modal-ticket .number { 
-      font-size: 60px; 
+      font-size: 85px; 
       font-weight: 900; 
-      margin: 6px 0; 
+      margin: 10px 0; 
       color: #0f172a; 
       line-height: 1; 
-      letter-spacing: 2px;
+      letter-spacing: 4px;
     }
     .ticket-meta-info {
       display: flex;
       justify-content: space-between;
       width: 100%;
-      padding: 0 4px;
-      font-size: 12px;
-      color: #64748b;
-      font-weight: 600;
-      margin-top: 2px;
+      padding: 0 10px;
+      font-size: 14px;
+      color: #475569;
+      font-weight: 700;
+      margin-top: 10px;
     }
 
     .modal-admin, .modal-policy, .modal-confirm, .modal-msg { background: white; padding: 15px 12px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
@@ -378,9 +383,9 @@
       font-size: 12px;
     }
 
-    .btn-modal { margin-top: 15px; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; font-size: 14px; }
+    .btn-modal { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; font-size: 15px; }
     .btn-close { background: #7f8c8d; }
-    .btn-print { background: #27ae60; margin-left: 10px; }
+    .btn-print { background: #27ae60; }
     .btn-primary { background: #3498db; width: 100%; }
     .btn-danger { background: #e74c3c; width: 100%; }
 
@@ -389,7 +394,7 @@
       .card { padding: 10px; }
       .btn-group { flex-direction: column; gap: 6px; }
       .btn { width: 100%; padding: 12px 6px; }
-      .modal-ticket .number { font-size: 52px; }
+      .modal-ticket .number { font-size: 75px; }
       #mapContainer { height: 140px; }
     }
   </style>
@@ -488,14 +493,18 @@
 
 <div id="modalOverlay" class="modal-overlay">
   <div class="modal-ticket">
-    <!-- Герб СИЗО по центру сверху -->
-    <img src="https://cdn-icons-png.flaticon.com/512/3596/3596091.png" alt="Герб СИЗО" class="ticket-emblem">
-    <h3>Электронный талон</h3>
-    <div id="mVisitorName" class="visitor-name"></div>
-    <div id="mTicketsContainer"></div>
-    <div style="margin-top: 15px; display: flex; gap: 8px; width: 100%;">
-      <button class="btn-modal btn-close" style="margin:0; flex:1;" type="button" onclick="closeModal('modalOverlay')">Закрыть</button>
-      <button class="btn-modal btn-print" style="margin:0; flex:1;" type="button" onclick="window.print()">Печать</button>
+    <div style="width: 100%;">
+      <!-- Герб СИЗО по центру сверху -->
+      <img src="https://cdn-icons-png.flaticon.com/512/3596/3596091.png" alt="Герб СИЗО" class="ticket-emblem">
+      <h3>Электронный талон</h3>
+      <div id="mVisitorName" class="visitor-name"></div>
+    </div>
+    
+    <div id="mTicketsContainer" style="width: 100%;"></div>
+
+    <div style="width: 100%; display: flex; gap: 10px;">
+      <button class="btn-modal btn-close" style="flex:1;" type="button" onclick="closeModal('modalOverlay')">Закрыть</button>
+      <button class="btn-modal btn-print" style="flex:1;" type="button" onclick="window.print()">Печать</button>
     </div>
   </div>
 </div>
@@ -618,7 +627,6 @@
     document.getElementById('messageModalOverlay').style.display = 'flex';
   }
 
-  /* Логика вызова панели администратора 4 быстрыми тапами */
   let tapCount = 0;
   let lastTapTime = 0;
 
@@ -1246,8 +1254,8 @@
           <div class="window-title">ОКОШКО №${Number(t.windowNum)}</div>
           <div class="number">${escapeHTML(t.code)}</div>
           <div class="ticket-meta-info">
-            <span>Дата: ${escapeHTML(ticketDate)}</span>
-            <span>Время: ${escapeHTML(t.time)}</span>
+            <span>📅 ${escapeHTML(ticketDate)}</span>
+            <span>🕒 ${escapeHTML(t.time)}</span>
           </div>
         </div>
       `;
