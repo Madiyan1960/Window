@@ -249,11 +249,12 @@
     th, td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
     th { background-color: #f8f9fa; color: #4a5568; position: sticky; top: 0; z-index: 2; }
 
+    /* Панель администратора скрыта по умолчанию */
     .admin-panel { 
       margin-top: 8px; 
       padding-top: 6px; 
       border-top: 1px dashed #cbd5e1; 
-      display: flex; 
+      display: none; 
       justify-content: flex-end; 
     }
     .btn-admin-reset { 
@@ -442,6 +443,7 @@
       </table>
     </div>
 
+    <!-- Панель администратора под таблицей (скрыта по умолчанию) -->
     <div id="adminPanelBlock" class="admin-panel">
       <button class="btn-admin-reset" type="button" onclick="openAdminModal()">⚙️</button>
     </div>
@@ -578,10 +580,12 @@
     document.getElementById('messageModalOverlay').style.display = 'flex';
   }
 
+  /* Логика вызова панели администратора 4 быстрыми тапами */
   let tapCount = 0;
   let lastTapTime = 0;
 
   document.body.addEventListener('click', (e) => {
+    // Исключаем клики внутри активных модальных окон
     if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy') || e.target.closest('.modal-confirm') || e.target.closest('.modal-msg')) {
       return;
     }
@@ -824,7 +828,6 @@
     coordsBox.style.display = 'block';
     coordsBox.innerText = `Ваши координаты: ${userLat.toFixed(5)}, ${userLng.toFixed(5)} (точность ~${Math.round(accuracy)}м)`;
 
-    // Авто-определение ПК/ноутбука: если устройства нет мобильного тач-экрана или точность крайне низкая
     const isDesktop = !('ontouchstart' in window || navigator.maxTouchPoints > 0) || accuracy > 1000;
 
     if (accuracy > ALLOWED_RADIUS_METERS * 2 && !isDesktop) {
