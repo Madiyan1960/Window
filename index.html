@@ -333,17 +333,20 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
-    /* ВЫТЯНУТАЯ ВЫСОКАЯ ЦИФРА ОЧЕРЕДИ */
+    /* НОМЕР ОЧЕРЕДИ СТРОГО В ОДНУ СТРОКУ С АВТОПОДГОНОМ РАЗМЕРА */
     .modal-ticket .number { 
-      font-size: 110px; 
+      font-size: 72px; 
       font-weight: 900; 
       margin: 5px 0; 
       color: #0f172a; 
-      line-height: 0.9; 
-      letter-spacing: 4px;
-      transform: scaleY(1.35);
+      line-height: 1; 
+      letter-spacing: 2px;
+      white-space: nowrap;
       display: inline-block;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .ticket-meta-info {
       display: flex;
@@ -402,7 +405,6 @@
       .card { padding: 10px; }
       .btn-group { flex-direction: column; gap: 6px; }
       .btn { width: 100%; padding: 12px 6px; }
-      .modal-ticket .number { font-size: 95px; }
       #mapContainer { height: 140px; }
     }
   </style>
