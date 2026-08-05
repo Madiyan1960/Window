@@ -268,43 +268,71 @@
       font-weight: bold; 
     }
 
-    .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; padding: 0; }
+    .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; padding: 10px; }
     
+    /* КРАСИВЫЙ И УКРУПНЕННЫЙ ТАЛОН */
     .modal-ticket { 
-      background: white; 
-      padding: 20px 15px; 
-      border-radius: 0; 
-      width: 100vw; 
-      height: 100vh; 
-      max-width: 100%; 
+      background: #ffffff; 
+      padding: 25px 20px; 
+      border-radius: 16px; 
+      width: 100%; 
+      max-width: 420px; 
       text-align: center; 
-      box-shadow: none; 
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      border: 8px dashed #1a252f;
+      border: 3px solid #2c3e50;
       overflow-y: auto;
+      max-height: 90vh;
     }
-    .modal-ticket h3 { margin: 0 0 10px 0; font-size: 24px; color: #555; letter-spacing: 2px; }
-    .modal-ticket .visitor-name { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
+    .modal-ticket h3 { 
+      margin: 0 0 5px 0; 
+      font-size: 16px; 
+      color: #7f8c8d; 
+      letter-spacing: 3px; 
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .modal-ticket .visitor-name { 
+      font-size: 14px; 
+      font-weight: bold; 
+      color: #2c3e50; 
+      margin-bottom: 12px; 
+      background: #f1f5f9;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
     .modal-ticket .ticket-item {
-      margin: 10px 0;
-      padding: 10px;
-      border-bottom: 2px dashed #ccc;
+      margin: 8px 0;
+      padding: 16px 10px;
+      background: #f8fafc;
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
       width: 100%;
-      max-width: 400px;
     }
-    .modal-ticket .window-title { font-size: 24px; font-weight: 800; color: #1a252f; }
+    .modal-ticket .window-title { 
+      font-size: 16px; 
+      font-weight: 700; 
+      color: #34495e; 
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    /* СУПЕР КРУПНЫЙ И ЧЕТКИЙ НОМЕР ТАЛОНА */
     .modal-ticket .number { 
-      font-size: 70px; 
+      font-size: 64px; 
       font-weight: 900; 
-      margin: 10px 0; 
-      color: #000; 
+      margin: 8px 0; 
+      color: #0f172a; 
       line-height: 1; 
-      letter-spacing: 2px;
+      letter-spacing: 3px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
     }
-    .modal-ticket .time-stamp { font-size: 14px; color: #666; font-weight: bold; }
+    .modal-ticket .time-stamp { 
+      font-size: 13px; 
+      color: #64748b; 
+      font-weight: 600; 
+    }
 
     .modal-admin, .modal-policy, .modal-confirm, .modal-msg { background: white; padding: 15px 12px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .modal-policy { text-align: left; max-height: 80vh; overflow-y: auto; }
@@ -352,8 +380,7 @@
       .card { padding: 10px; }
       .btn-group { flex-direction: column; gap: 6px; }
       .btn { width: 100%; padding: 12px 6px; }
-      .modal-ticket .number { font-size: 60px; }
-      .modal-ticket .window-title { font-size: 20px; }
+      .modal-ticket .number { font-size: 56px; }
       #mapContainer { height: 140px; }
     }
   </style>
@@ -452,12 +479,12 @@
 
 <div id="modalOverlay" class="modal-overlay">
   <div class="modal-ticket">
-    <h3>ТАЛОН ОЧЕРЕДИ</h3>
+    <h3>Электронный талон</h3>
     <div id="mVisitorName" class="visitor-name"></div>
     <div id="mTicketsContainer"></div>
-    <div style="margin-top: 15px;">
-      <button class="btn-modal btn-close" type="button" onclick="closeModal('modalOverlay')">Закрыть</button>
-      <button class="btn-modal btn-print" type="button" onclick="window.print()">Печать</button>
+    <div style="margin-top: 15px; display: flex; gap: 8px; width: 100%;">
+      <button class="btn-modal btn-close" style="margin:0; flex:1;" type="button" onclick="closeModal('modalOverlay')">Закрыть</button>
+      <button class="btn-modal btn-print" style="margin:0; flex:1;" type="button" onclick="window.print()">Печать</button>
     </div>
   </div>
 </div>
@@ -585,7 +612,6 @@
   let lastTapTime = 0;
 
   document.body.addEventListener('click', (e) => {
-    // Исключаем клики внутри активных модальных окон
     if (e.target.closest('.modal-ticket') || e.target.closest('.modal-admin') || e.target.closest('.modal-policy') || e.target.closest('.modal-confirm') || e.target.closest('.modal-msg')) {
       return;
     }
@@ -1205,7 +1231,7 @@
       <div class="ticket-item">
         <div class="window-title">ОКОШКО №${Number(t.windowNum)}</div>
         <div class="number">${escapeHTML(t.code)}</div>
-        <div class="time-stamp">Выдан: ${escapeHTML(t.time)}</div>
+        <div class="time-stamp">Выдан в: ${escapeHTML(t.time)}</div>
       </div>
     `).join('');
 
