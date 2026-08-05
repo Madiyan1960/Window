@@ -471,43 +471,54 @@
   </div>
 </div>
 
+<!-- Модальное окно Админа (с разделением на Вход и Настройки) -->
 <div id="adminModalOverlay" class="modal-overlay">
   <div class="modal-admin">
     <h3>ПАНЕЛЬ АДМИНИСТРАТОРА</h3>
-    <p style="font-size:11px; color:#666; margin-bottom:8px;">Авторизуйтесь для управления очередью и графиком</p>
 
-    <input type="email" id="adminEmail" class="admin-input" placeholder="Email администратора">
-    <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль администратора">
-
-    <div class="time-settings-group">
-      <label>🕒 Время работы электронной очереди:</label>
-      <div class="time-inputs-flex">
-        <span>С:</span>
-        <input type="time" id="startTimeInput" value="00:01">
-        <span>До:</span>
-        <input type="time" id="endTimeInput" value="16:30">
-      </div>
+    <!-- Этап 1: Только авторизация -->
+    <div id="adminLoginForm">
+      <p style="font-size:11px; color:#666; margin-bottom:8px;">Авторизуйтесь для доступа к настройкам очереди</p>
+      <input type="email" id="adminEmail" class="admin-input" placeholder="Email администратора">
+      <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль администратора">
+      <button class="btn-modal btn-primary" style="width:100%; margin-top:8px;" type="button" onclick="submitAdminLogin()">🔑 Войти</button>
     </div>
 
-    <div class="time-settings-group">
-      <label>🗑️ Время автоматической очистки очереди за сегодня:</label>
-      <div class="time-inputs-flex">
-        <span>Время очистки:</span>
-        <input type="time" id="purgeTimeInput" value="18:00">
+    <!-- Этап 2: Настройки (скрыты до успешного входа) -->
+    <div id="adminSettingsForm" style="display: none;">
+      <p style="font-size:11px; color:#27ae60; font-weight:bold; margin-bottom:8px;">✅ Доступ разрешен</p>
+
+      <div class="time-settings-group">
+        <label>🕒 Время работы электронной очереди:</label>
+        <div class="time-inputs-flex">
+          <span>С:</span>
+          <input type="time" id="startTimeInput" value="00:01">
+          <span>До:</span>
+          <input type="time" id="endTimeInput" value="16:30">
+        </div>
       </div>
+
+      <div class="time-settings-group">
+        <label>🗑️ Время автоматической очистки очереди за сегодня:</label>
+        <div class="time-inputs-flex">
+          <span>Время очистки:</span>
+          <input type="time" id="purgeTimeInput" value="18:00">
+        </div>
+      </div>
+
+      <div class="time-settings-group">
+        <label>📏 Радиус действия разрешения (в метрах):</label>
+        <div class="time-inputs-flex">
+          <input type="number" id="radiusInput" value="300" min="10" max="50000" step="10">
+          <span>метров</span>
+        </div>
+      </div>
+
+      <button class="btn-modal btn-primary" type="button" onclick="submitSaveSettings()">💾 Сохранить настройки</button>
+      <button class="btn-modal btn-danger" type="button" onclick="promptAdminReset()">🗑️ Очистить всю очередь и архив</button>
     </div>
 
-    <div class="time-settings-group">
-      <label>📏 Радиус действия разрешения (в метрах):</label>
-      <div class="time-inputs-flex">
-        <input type="number" id="radiusInput" value="300" min="10" max="50000" step="10">
-        <span>метров</span>
-      </div>
-    </div>
-
-    <button class="btn-modal btn-primary" type="button" onclick="submitSaveSettings()">💾 Сохранить настройки</button>
-    <button class="btn-modal btn-danger" type="button" onclick="promptAdminReset()">🗑️ Очистить всю очередь и архив</button>
-    <button class="btn-modal btn-close" style="width:100%; margin-top:6px;" type="button" onclick="closeModal('adminModalOverlay')">Закрыть</button>
+    <button class="btn-modal btn-close" style="width:100%; margin-top:8px;" type="button" onclick="closeAdminModal()">Закрыть</button>
   </div>
 </div>
 
@@ -523,7 +534,7 @@
   </div>
 </div>
 
-<!-- Модальное окно кастомных сообщений (Замена alert) -->
+<!-- Модальное окно кастомных сообщений -->
 <div id="messageModalOverlay" class="modal-overlay">
   <div class="modal-msg">
     <h3 id="msgModalTitle" style="margin-top:0; font-size:16px;">Уведомление</h3>
@@ -564,7 +575,6 @@
   let userPlacemark = null;
   let isQueueLoaded = false;
 
-  // Кастомная замена системного alert()
   function showCustomMessage(text, title = "Уведомление") {
     document.getElementById('msgModalTitle').innerText = title;
     document.getElementById('msgModalText').innerText = text;
@@ -1083,28 +1093,51 @@
   }
 
   function openPolicyModal() { document.getElementById('policyModalOverlay').style.display = 'flex'; }
-  function openAdminModal() { document.getElementById('adminModalOverlay').style.display = 'flex'; }
+  
+  function openAdminModal() { 
+    document.getElementById('adminLoginForm').style.display = 'block';
+    document.getElementById('adminSettingsForm').style.display = 'none';
+    document.getElementById('adminEmail').value = '';
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('adminModalOverlay').style.display = 'flex'; 
+  }
 
-  async function submitSaveSettings() {
+  function closeAdminModal() {
+    closeModal('adminModalOverlay');
+    auth.signOut();
+  }
+
+  // Проверка логина/пароля администратора
+  async function submitAdminLogin() {
     const email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
-    const startVal = document.getElementById('startTimeInput').value;
-    const endVal = document.getElementById('endTimeInput').value;
-    const purgeVal = document.getElementById('purgeTimeInput').value;
-    const radiusVal = parseInt(document.getElementById('radiusInput').value, 10);
 
     if (!email || !password) { 
       showCustomMessage('Введите email и пароль администратора');
       return; 
     }
+
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      document.getElementById('adminLoginForm').style.display = 'none';
+      document.getElementById('adminSettingsForm').style.display = 'block';
+    } catch (error) {
+      showCustomMessage('Ошибка авторизации: ' + error.message);
+    }
+  }
+
+  async function submitSaveSettings() {
+    const startVal = document.getElementById('startTimeInput').value;
+    const endVal = document.getElementById('endTimeInput').value;
+    const purgeVal = document.getElementById('purgeTimeInput').value;
+    const radiusVal = parseInt(document.getElementById('radiusInput').value, 10);
+
     if (!startVal || !endVal || !purgeVal || isNaN(radiusVal)) {
       showCustomMessage('Заполните все поля корректно!');
       return;
     }
 
     try {
-      await auth.signInWithEmailAndPassword(email, password);
-      
       await Promise.all([
         settingsTimeRef.set({ start: startVal, end: endVal }),
         settingsPurgeRef.set(purgeVal),
@@ -1112,36 +1145,23 @@
       ]);
 
       showCustomMessage('Настройки успешно сохранены!');
-      closeModal('adminModalOverlay');
-      await auth.signOut();
+      closeAdminModal();
     } catch (error) {
       showCustomMessage('Ошибка: ' + error.message);
     }
   }
 
   function promptAdminReset() {
-    const email = document.getElementById('adminEmail').value.trim();
-    const password = document.getElementById('adminPassword').value.trim();
-
-    if (!email || !password) { 
-      showCustomMessage('Введите email и пароль администратора'); 
-      return; 
-    }
     document.getElementById('confirmModalOverlay').style.display = 'flex';
   }
 
   async function executeAdminReset() {
     closeModal('confirmModalOverlay');
-    const email = document.getElementById('adminEmail').value.trim();
-    const password = document.getElementById('adminPassword').value.trim();
-
     try {
-      await auth.signInWithEmailAndPassword(email, password);
       localStorage.removeItem('sizo_ticket_obj_' + todayStr);
       await db.ref('queues').remove();
       showCustomMessage('Вся очередь успешно очищена!');
-      closeModal('adminModalOverlay');
-      await auth.signOut();
+      closeAdminModal();
     } catch (error) {
       showCustomMessage('Ошибка: ' + error.message);
     }
